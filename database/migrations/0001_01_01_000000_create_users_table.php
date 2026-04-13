@@ -11,22 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Tabel Users dengan Username dan Role
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('username')->unique(); // Mengganti name/email menjadi username
             $table->string('password');
+            $table->enum('role', ['admin', 'kasir'])->default('kasir'); // Tambah Role
             $table->rememberToken();
             $table->timestamps();
         });
 
+        // Tabel Reset Password (Opsional, tapi bagus untuk jaga-jaga)
         Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
+            $table->string('username')->primary(); // Pakai username sebagai kunci
             $table->string('token');
             $table->timestamp('created_at')->nullable();
         });
 
+        // Tabel Sessions (PENTING: Agar error 'sessions not found' hilang)
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->foreignId('user_id')->nullable()->index();

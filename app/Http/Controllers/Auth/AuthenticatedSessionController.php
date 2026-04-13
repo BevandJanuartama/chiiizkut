@@ -3,45 +3,55 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
-    public function create(): View
+    public function create()
     {
         return view('auth.login');
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(Request $request)
     {
-        $request->authenticate();
+        // 1. VALIDASI
+        $request->validate([
+            'username' => ['required', 'string'],
+            'password' => ['required', 'string'],
+        ]);
 
+        // 2. PROSES LOGIN
+        if (!Auth::attempt([
+            'username' => $request->username,
+            'password' => $request->password
+        ], $request->remember)) {
+
+            throw ValidationException::withMessages([
+                'username' => 'Username atau password salah.',
+            ]);
+        }
+
+        // 3. REGENERATE SESSION
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // 4. REDIRECT BERDASARKAN ROLE
+        $user = Auth::user();
+
+        return match ($user->role) {
+            'admin' => redirect()->intended('/admin/dashboard'),
+            'kasir' => redirect()->intended('/kasir/dashboard'),
+            default => abort(403, 'Role tidak dikenali.'),
+        };
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request)
     {
-        Auth::guard('web')->logout();
-
+        Auth::logout();
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/login');
     }
 }

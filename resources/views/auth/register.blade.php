@@ -6,47 +6,68 @@
     <title>Register - ChiiiZkut</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#F2AF17] min-h-screen flex items-center justify-center p-6">
+<body class="bg-[#F2AF17] min-h-screen flex items-center justify-center p-4">
 
-    <div class="bg-white w-full max-w-xl rounded-[2rem] border-4 border-black p-8 md:p-12 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
-        <div class="mb-10">
-            <h2 class="text-4xl font-black uppercase">Buat Akun</h2>
-            <p class="text-gray-600 font-bold">Gabung jadi ChiiiZ-Lovers sekarang!</p>
+    <div class="bg-white w-full max-w-lg rounded-[3rem] p-10 border-4 border-black shadow-[15px_15px_0px_0px_rgba(0,0,0,1)]">
+        <div class="mb-8">
+            <h2 class="text-4xl font-black italic text-black tracking-tighter">JOIN THE TEAM.</h2>
+            <p class="text-gray-600 font-bold">Daftarkan akun kasir/admin baru ChiiiZkut.</p>
         </div>
 
-        <form method="POST" action="{{ route('register') }}" class="grid md:grid-cols-2 gap-6">
+        <form method="POST" action="{{ route('register') }}" class="space-y-4">
             @csrf
-            <div class="col-span-2">
-                <label class="block font-black mb-1">Nama Lengkap</label>
-                <input type="text" name="name" required class="w-full border-2 border-black rounded-xl p-3 focus:ring-4 focus:ring-[#F2AF17] outline-none">
-            </div>
 
-            <div class="col-span-2">
-                <label class="block font-black mb-1">Email</label>
-                <input type="email" name="email" required class="w-full border-2 border-black rounded-xl p-3 focus:ring-4 focus:ring-[#F2AF17] outline-none">
+            <div>
+                <label for="username" class="block text-sm font-black mb-1">USERNAME</label>
+                <input id="username" type="text" name="username" value="{{ old('username') }}" required
+                    class="w-full border-2 border-black rounded-2xl p-3 focus:bg-gray-50 outline-none transition font-bold shadow-sm">
+                @error('username')
+                    <p class="text-red-600 text-xs mt-1 font-bold">{{ $message }}</p>
+                @enderror
             </div>
 
             <div>
-                <label class="block font-black mb-1">Password</label>
-                <input type="password" name="password" required class="w-full border-2 border-black rounded-xl p-3 focus:ring-4 focus:ring-[#F2AF17] outline-none">
+                <label for="role" class="block text-sm font-black mb-1">AKSES ROLE</label>
+                <select id="role" name="role" required
+                    class="w-full border-2 border-black rounded-2xl p-3 bg-white font-bold outline-none focus:ring-2 focus:ring-black transition cursor-pointer">
+                    <option value="">-- Pilih Akses --</option>
+                    <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="kasir" {{ old('role') == 'kasir' ? 'selected' : '' }}>Kasir</option>
+                </select>
+                @error('role')
+                    <p class="text-red-600 text-xs mt-1 font-bold">{{ $message }}</p>
+                @enderror
             </div>
 
-            <div>
-                <label class="block font-black mb-1">Konfirmasi</label>
-                <input type="password" name="password_confirmation" required class="w-full border-2 border-black rounded-xl p-3 focus:ring-4 focus:ring-[#F2AF17] outline-none">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="password" class="block text-sm font-black mb-1">PASSWORD</label>
+                    <input id="password" type="password" name="password" required
+                        class="w-full border-2 border-black rounded-2xl p-3 outline-none">
+                    @error('password')
+                        <p class="text-red-600 text-xs mt-1 font-bold">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="password_confirmation" class="block text-sm font-black mb-1">KONFIRMASI</label>
+                    <input id="password_confirmation" type="password" name="password_confirmation" required
+                        class="w-full border-2 border-black rounded-2xl p-3 outline-none">
+                </div>
             </div>
 
-            <div class="col-span-2 pt-4">
-                <button type="submit" class="w-full bg-black text-[#F2AF17] font-black py-4 rounded-xl text-xl hover:scale-[1.02] transition-transform shadow-lg">
-                    DAFTAR AKUN
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-black text-[#F2AF17] font-black py-4 rounded-2xl text-xl hover:scale-95 transition-transform duration-200">
+                    DAFTARKAN SEKARANG
                 </button>
             </div>
-        </form>
 
-        <div class="mt-8 text-center border-t-2 border-gray-100 pt-6">
-            <span class="text-gray-500">Sudah jadi member?</span>
-            <a href="{{ route('login') }}" class="font-black hover:text-[#F2AF17] transition">Login di sini</a>
-        </div>
+            <div class="text-center">
+                <a class="text-sm font-bold text-black underline" href="{{ route('login') }}">
+                    Sudah punya akses? Login
+                </a>
+            </div>
+        </form>
     </div>
 
 </body>
