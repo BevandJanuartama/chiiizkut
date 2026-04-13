@@ -51,8 +51,10 @@
                             <h4 class="font-black text-xs lg:text-md uppercase line-clamp-1" x-text="product.name"></h4>
                             <div class="flex justify-between items-center mt-4">
                                 <span class="text-chiiiz font-extrabold text-lg" x-text="'Rp' + (product.price/1000) + 'k'"></span>
-                                <div class="w-8 h-8 bg-black text-chiiiz rounded-full flex items-center justify-center font-black">+</div>
+                                <div class="w-8 h-8 bg-black text-chiiiz rounded-full flex items-center justify-center font-black" 
+                                     :class="product.stok <= 0 ? 'bg-gray-400 opacity-50' : ''">+</div>
                             </div>
+                            <p class="text-[9px] font-bold mt-1 text-gray-400 uppercase" x-text="'Stok: ' + product.stok"></p>
                         </div>
                     </template>
                 </div>
@@ -89,50 +91,58 @@
                     <p class="text-3xl font-black" x-text="'Rp' + cartTotal.toLocaleString()"></p>
                     <p class="text-[10px] font-bold text-gray-400 uppercase" x-text="totalItems + ' Items'"></p>
                 </div>
-                <button @click="step = 'payment'; openModal = true" 
+                <button @click="openModal = true; step = 'payment'" 
                     class="w-full bg-black text-chiiiz font-black py-5 rounded-[2rem] text-xl shadow-[6px_6px_0px_0px_#F2AF17]">
                     BAYAR SEKARANG
                 </button>
             </div>
         </aside>
 
-        <div x-show="openModal" x-transition.opacity class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div x-show="openModal" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4" x-cloak>
             <div class="bg-white rounded-[3rem] w-full max-w-md p-10 border-4 border-black relative">
                 
                 <div x-show="step === 'payment'">
                     <h3 class="text-2xl font-black uppercase mb-6 text-center italic">Pilih <span class="text-chiiiz">Metode Pembayaran</span></h3>
                     <div class="grid grid-cols-2 gap-4">
-                        <button @click="paymentMethod = 'cash'; step = 'customer'" class="neo-card p-6 rounded-[2rem] flex flex-col items-center gap-2 hover:bg-chiiiz transition">
+                        <button @click="selectPayment('cash')" class="neo-card p-6 rounded-[2rem] flex flex-col items-center gap-2 hover:bg-chiiiz transition">
                             <span class="text-4xl">💵</span>
                             <span class="font-black uppercase text-xs">CASH</span>
                         </button>
-                        <button @click="paymentMethod = 'qris'; step = 'customer'" class="neo-card p-6 rounded-[2rem] flex flex-col items-center gap-2 hover:bg-chiiiz transition">
+                        <button @click="selectPayment('qris')" class="neo-card p-6 rounded-[2rem] flex flex-col items-center gap-2 hover:bg-chiiiz transition">
                             <span class="text-4xl">📱</span>
                             <span class="font-black uppercase text-xs">QRIS</span>
                         </button>
                     </div>
-                    <button @click="openModal = false" class="w-full mt-8 text-sm font-black underline uppercase">Kembali Pilih Menu</button>
+                    <button @click="openModal = false" class="w-full mt-6 text-xs font-bold uppercase underline">Kembali</button>
+                </div>
+
+                <div x-show="step === 'qris_display'" class="text-center">
+                    <h3 class="text-xl font-black uppercase mb-4 text-center">SCAN <span class="text-chiiiz">QRIS</span></h3>
+                    <div class="bg-gray-100 p-4 rounded-3xl border-2 border-black inline-block mb-4">
+                        <img src="/img/qris-placeholder.png" class="w-48 h-48 mx-auto">
+                    </div>
+                    <p class="text-[10px] font-bold text-gray-400 mb-6 italic uppercase">Silakan bayar, lalu klik tombol di bawah.</p>
+                    <button @click="step = 'customer'" class="w-full bg-black text-chiiiz font-black py-4 rounded-2xl shadow-[4px_4px_0px_0px_#F2AF17]">SAYA SUDAH BAYAR</button>
                 </div>
 
                 <div x-show="step === 'customer'">
-                    <h3 class="text-2xl font-black uppercase mb-2">Data <span class="text-chiiiz">Pesanan</span></h3>
-                    <p class="text-[10px] font-bold text-gray-400 mb-6 uppercase">Hampir selesai! Masukkan identitasmu.</p>
+                    <h3 class="text-2xl font-black uppercase mb-6 text-center">Data <span class="text-chiiiz">Pesanan</span></h3>
                     <div class="space-y-4">
-                        <input type="text" x-model="customerName" placeholder="NAMA LENGKAP" class="w-full border-4 border-black p-4 rounded-2xl font-black">
+                        <input type="text" x-model="customerName" placeholder="NAMA LENGKAP" class="w-full border-4 border-black p-4 rounded-2xl font-black uppercase">
                         <input type="tel" x-model="customerPhone" placeholder="NOMOR WHATSAPP" class="w-full border-4 border-black p-4 rounded-2xl font-black">
-                        <button @click="finishOrder()" class="w-full bg-black text-chiiiz font-black py-5 rounded-2xl text-xl mt-4 italic">KONFIRMASI AKHIR 🧀</button>
+                        <button @click="finishOrder()" class="w-full bg-black text-chiiiz font-black py-5 rounded-2xl text-xl mt-4">KONFIRMASI PESANAN 🧀</button>
                     </div>
-                    <button @click="step = 'payment'" class="w-full mt-4 text-xs font-black underline uppercase text-gray-400">Ganti Metode Pembayaran</button>
+                    <button @click="step = 'payment'" class="w-full mt-4 text-xs font-bold uppercase underline text-gray-400">Kembali</button>
                 </div>
 
                 <div x-show="step === 'success'" class="text-center">
-                    <h3 class="text-2xl font-black uppercase text-chiiiz">BERHASIL!</h3>
+                    <h3 class="text-2xl font-black uppercase text-chiiiz">PESANAN BERHASIL!</h3>
                     <div class="bg-black text-chiiiz p-10 rounded-[3rem] border-4 border-chiiiz my-8">
-                        <p class="text-[10px] font-black uppercase opacity-60 mb-2">NOMOR ANTREAN</p>
+                        <p class="text-xs font-bold uppercase opacity-60 mb-2 tracking-widest">Nomor Antrean</p>
                         <h4 class="text-8xl font-black" x-text="queueNumber"></h4>
                     </div>
-                    <p class="text-xs font-bold mb-6 italic" x-text="paymentMethod === 'cash' ? 'Harap bayar ke kasir untuk proses masak' : 'Silakan scan QRIS di meja kasir'"></p>
-                    <button @click="reset()" class="font-black underline text-sm uppercase">MENU UTAMA</button>
+                    <p class="text-xs font-bold mb-6 italic text-gray-500">Silakan ambil struk Anda dan tunggu dipanggil.</p>
+                    <button @click="reset()" class="font-black underline text-sm uppercase">PESAN LAGI</button>
                 </div>
 
             </div>
@@ -142,7 +152,7 @@
     <script>
         function kioskApp(dbProducts) {
             return {
-                step: 'cart', // cart, payment, customer, success
+                step: 'cart', 
                 activeCategory: 'all',
                 openModal: false,
                 paymentMethod: '',
@@ -157,27 +167,54 @@
                     { id: 'drink', name: 'Drink', icon: '🥤' }
                 ],
                 products: dbProducts.map(p => ({
-                    id: p.id, name: p.nama_produk, price: parseFloat(p.harga), image: p.gambar,
+                    id: p.id, 
+                    name: p.nama_produk, 
+                    price: parseFloat(p.harga), 
+                    image: p.gambar,
+                    stok: p.stok,
                     category: p.nama_produk.toLowerCase().includes('drink') ? 'drink' : (p.nama_produk.toLowerCase().includes('whole') ? 'whole' : 'slice')
                 })),
-                get filteredProducts() { return this.activeCategory === 'all' ? this.products : this.products.filter(p => p.category === this.activeCategory); },
+
+                get filteredProducts() { 
+                    return this.activeCategory === 'all' ? this.products : this.products.filter(p => p.category === this.activeCategory); 
+                },
                 get cartTotal() { return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); },
                 get totalItems() { return this.cart.reduce((sum, i) => sum + i.qty, 0); },
+
                 addToCart(p) {
                     let existing = this.cart.find(item => item.id === p.id);
-                    if (existing) existing.qty++;
-                    else this.cart.push({ ...p, qty: 1 });
+                    if (existing) {
+                        if(existing.qty < p.stok) existing.qty++;
+                        else alert('Maaf, stok sudah habis!');
+                    } else {
+                        if(p.stok > 0) this.cart.push({ ...p, qty: 1 });
+                        else alert('Maaf, produk ini sedang kosong!');
+                    }
                 },
                 removeFromCart(index) {
                     if (this.cart[index].qty > 1) this.cart[index].qty--;
                     else this.cart.splice(index, 1);
                 },
+
+                selectPayment(method) {
+                    this.paymentMethod = method;
+                    if(method === 'qris') {
+                        this.step = 'qris_display';
+                    } else {
+                        this.step = 'customer';
+                    }
+                },
+
                 async finishOrder() {
-                    if(!this.customerName || !this.customerPhone) return alert('Lengkapi data diri!');
+                    if(!this.customerName || !this.customerPhone) return alert('Harap lengkapi Nama dan No WhatsApp!');
+                    
                     try {
                         const response = await fetch("{{ route('checkout') }}", {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                            headers: { 
+                                'Content-Type': 'application/json', 
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                            },
                             body: JSON.stringify({
                                 total: this.cartTotal,
                                 items: this.cart,
@@ -186,14 +223,22 @@
                                 payment_method: this.paymentMethod
                             })
                         });
+                        
                         const result = await response.json();
                         if(result.success) {
-                            this.queueNumber = result.order_id.toString().padStart(3, '0');
+                            this.queueNumber = result.queue_number.toString().padStart(3, '0');
                             this.step = 'success';
+                        } else {
+                            alert(result.message);
                         }
-                    } catch (error) { alert('Sistem error!'); }
+                    } catch (error) { 
+                        alert('Terjadi kesalahan sistem. Silakan hubungi kasir.'); 
+                    }
                 },
-                reset() { location.reload(); }
+
+                reset() {
+                    location.reload(); 
+                }
             }
         }
     </script>

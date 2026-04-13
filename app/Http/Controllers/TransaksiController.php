@@ -13,9 +13,9 @@ class TransaksiController extends Controller
     /**
      * Menyimpan transaksi dari Kiosk (AJAX/Fetch)
      */
+
     public function checkout(Request $request)
     {
-        // Validasi data yang masuk
         $request->validate([
             'total' => 'required|numeric',
             'items' => 'required|array',
@@ -25,45 +25,51 @@ class TransaksiController extends Controller
         ]);
 
         try {
-            // Gunakan Database Transaction agar data aman (jika satu gagal, semua batal)
             return DB::transaction(function () use ($request) {
                 
-                // 1. Simpan ke tabel transaksis
+                // 1. Hitung Nomor Antrean Hari Ini
+                // Mencari transaksi terakhir di hari yang sama
+                $lastOrder = Transaksi::whereDate('created_at', now()->toDateString())->count();
+                $queueNumber = $lastOrder + 1;
+
+                // 2. Simpan Transaksi Utama
                 $transaksi = Transaksi::create([
-                    'nama'    => $request->name,
-                    'telepon' => $request->phone, // Pastikan ini menangkap key 'phone'
-                    'total'   => $request->total,
+                    'nama' => $request->name,
+                    'telepon' => $request->phone,
+                    'total' => $request->total,
                     'metode_pembayaran' => $request->payment_method,
+                    'nomor_antrean' => $queueNumber, // Pastikan kolom ini ada di migrasi
                 ]);
 
-                // 2. Loop dan simpan ke tabel detail_transaksis
-                // Di dalam DB::transaction loop:
+                // 3. Simpan Detail & Update Stok
                 foreach ($request->items as $item) {
+                    // Simpan Detail
                     DetailTransaksi::create([
                         'transaksi_id' => $transaksi->id,
-                        'produk_id'    => $item['id'],  // GANTI 'barang_id' menjadi 'produk_id' agar sinkron dengan migrasi & model
+                        'produk_id'    => $item['id'],
                         'qty'          => $item['qty'],
                         'harga_satuan' => $item['price'],
                         'subtotal'     => $item['price'] * $item['qty'],
                     ]);
+
+                    // KURANGI STOK PRODUK
+                    $produk = \App\Models\Produk::find($item['id']);
+                    if ($produk->stok < $item['qty']) {
+                        throw new \Exception("Stok untuk " . $produk->nama_produk . " tidak mencukupi!");
+                    }
+                    $produk->decrement('stok', $item['qty']);
                 }
 
-                // Berikan respon sukses dan ID transaksi untuk nomor antrean
                 return response()->json([
                     'success' => true,
-                    'message' => 'Pesanan berhasil diproses',
-                    'order_id' => $transaksi->id
+                    'queue_number' => $queueNumber // Mengirim nomor antrean harian
                 ], 201);
             });
 
         } catch (\Exception $e) {
-            // Catat error di log jika terjadi kegagalan
-            Log::error('Checkout Error: ' . $e->getMessage());
-
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal memproses pesanan. Silakan coba lagi.',
-                'error' => $e->getMessage()
+                'message' => $e->getMessage()
             ], 500);
         }
     }

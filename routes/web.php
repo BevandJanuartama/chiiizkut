@@ -38,6 +38,13 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('admin/produks', ProdukController::class);
 
+    // Halaman form tambah stok
+    Route::get('admin/stok/tambah', [ProdukController::class, 'editStok'])->name('stok.edit');
+    // Proses update stok ke database
+    Route::put('admin/stok/update', [ProdukController::class, 'updateStok'])->name('stok.update');
+
+    Route::get('admin/stok/logs', [ProdukController::class, 'stokLogs'])->name('stok.logs');
+
     // Rute Khusus Kasir
     Route::get('/kasir/dashboard', function () {
         if (Auth::user()->role !== 'kasir') { abort(403); }

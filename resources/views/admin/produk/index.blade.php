@@ -3,83 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Produk - Admin</title>
+    <title>Daftar Produk - Admin ChiiiZkut.</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        .bg-chiiiz { background-color: #F2AF17; }
+        .text-chiiiz { color: #F2AF17; }
+        .border-chiiiz { border-color: #F2AF17; }
+        
+        .card-neo {
+            background: white;
+            border: 3px solid black;
+            border-radius: 1.5rem;
+            box-shadow: 8px 8px 0px 0px rgba(0,0,0,1);
+            transition: all 0.2s ease;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 font-sans antialiased">
-    <div class="min-h-screen">
-        <nav class="bg-white border-b border-gray-100 p-4 shadow">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <span class="font-bold text-xl text-indigo-600">Admin Panel</span>
-                <a href="{{ route('admin.dashboard') }}" class="text-gray-600 hover:text-indigo-600">Kembali ke Dashboard</a>
-            </div>
-        </nav>
+<body class="bg-gray-100 text-black">
 
-        <main class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-semibold text-gray-800">Manajemen Stok Produk</h2>
-                        <a href="{{ route('produks.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg transition shadow-md">
-                            + Tambah Produk Baru
-                        </a>
-                    </div>
+    <div class="flex min-h-screen">
+        @include('layouts.sidebar')
 
-                    @if(session('success'))
-                        <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded shadow-sm">
-                            {{ session('success') }}
-                        </div>
-                    @endif
+        <main class="flex-1 p-8 md:p-12">
+            <header class="flex justify-between items-center mb-10">
+                <div>
+                    <h2 class="text-4xl font-black tracking-tight">Manajemen <span class="text-chiiiz italic">Katalog Produk</span></h2>
+                    <p class="text-gray-600 mt-1 font-medium">Lihat, edit, dan atur ketersediaan produk cake kamu.</p>
+                </div>
+                <a href="{{ route('produks.create') }}" class="bg-chiiiz text-black border-2 border-black px-6 py-3 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+                    + PRODUK BARU
+                </a>
+            </header>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="border-b bg-gray-50">
-                                    <th class="p-4 text-sm font-bold text-gray-600 uppercase">Gambar</th>
-                                    <th class="p-4 text-sm font-bold text-gray-600 uppercase">Nama Produk</th>
-                                    <th class="p-4 text-sm font-bold text-gray-600 uppercase">Ukuran</th>
-                                    <th class="p-4 text-sm font-bold text-gray-600 uppercase">Harga</th>
-                                    <th class="p-4 text-sm font-bold text-gray-600 uppercase text-center">Stok</th>
-                                    <th class="p-4 text-sm font-bold text-gray-600 uppercase text-right">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200">
-                                @foreach ($produks as $produk)
-                                <tr class="hover:bg-gray-50 transition">
-                                    <td class="p-4">
-                                        <img src="{{ asset('storage/'.$produk->gambar) }}" class="w-16 h-16 object-cover rounded-lg border shadow-sm">
-                                    </td>
-                                    <td class="p-4 font-semibold text-gray-800">{{ $produk->nama_produk }}</td>
-                                    <td class="p-4">
-                                        @if(is_array($produk->ukuran))
+            @if(session('success'))
+                <div class="mb-6 p-4 bg-green-400 border-2 border-black rounded-xl font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            <div class="card-neo overflow-hidden bg-white">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b-4 border-black bg-gray-50">
+                                <th class="p-5 text-sm font-black uppercase tracking-widest">Gambar</th>
+                                <th class="p-5 text-sm font-black uppercase tracking-widest">Nama Produk</th>
+                                <th class="p-5 text-sm font-black uppercase tracking-widest">Ukuran</th>
+                                <th class="p-5 text-sm font-black uppercase tracking-widest">Harga</th>
+                                <th class="p-5 text-sm font-black uppercase tracking-widest text-center">Stok</th>
+                                <th class="p-5 text-sm font-black uppercase tracking-widest text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y-2 divide-gray-100 font-semibold">
+                            @foreach ($produks as $produk)
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="p-5">
+                                    <img src="{{ asset('storage/'.$produk->gambar) }}" class="w-20 h-20 object-cover rounded-xl border-2 border-black shadow-sm">
+                                </td>
+                                <td class="p-5 text-lg font-bold">{{ $produk->nama_produk }}</td>
+                                <td class="p-5">
+                                    @if(is_array($produk->ukuran))
+                                        <div class="flex flex-wrap gap-1">
                                             @foreach($produk->ukuran as $sz)
-                                                <span class="inline-block bg-gray-200 text-gray-700 px-2 py-1 rounded text-xs mr-1 uppercase">{{ $sz }}</span>
+                                                <span class="bg-black text-white px-2 py-1 rounded-md text-[10px] uppercase font-black tracking-tighter">{{ $sz }}</span>
                                             @endforeach
-                                        @else
-                                            {{ $produk->ukuran }}
-                                        @endif
-                                    </td>
-                                    <td class="p-4 text-gray-600">Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
-                                    <td class="p-4 text-center">
-                                        <span class="px-2 py-1 rounded-full text-xs font-bold {{ $produk->stok < 10 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600' }}">
-                                            {{ $produk->stok }}
-                                        </span>
-                                    </td>
-                                    <td class="p-4 text-right space-x-3">
-                                        <a href="{{ route('produks.edit', $produk->id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">Edit</a>
+                                        </div>
+                                    @else
+                                        <span class="bg-black text-white px-2 py-1 rounded-md text-[10px] uppercase font-black">{{ $produk->ukuran }}</span>
+                                    @endif
+                                </td>
+                                <td class="p-5 text-chiiiz font-black">Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
+                                <td class="p-5 text-center">
+                                    <span class="inline-block px-4 py-1 rounded-full border-2 border-black font-black {{ $produk->stok < 10 ? 'bg-red-500 text-white' : 'bg-chiiiz text-black' }}">
+                                        {{ $produk->stok }}
+                                    </span>
+                                </td>
+                                <td class="p-5 text-right">
+                                    <div class="flex justify-end items-center gap-4">
+                                        <a href="{{ route('produks.edit', $produk->id) }}" class="text-blue-600 hover:underline font-black uppercase text-xs tracking-widest">Edit</a>
                                         <form action="{{ route('produks.destroy', $produk->id) }}" method="POST" class="inline">
                                             @csrf @method('DELETE')
-                                            <button type="submit" class="text-red-500 hover:text-red-700 font-medium" onclick="return confirm('Apakah Anda yakin ingin menghapus produk ini?')">Hapus</button>
+                                            <button type="submit" class="text-red-500 hover:underline font-black uppercase text-xs tracking-widest" onclick="return confirm('Hapus produk ini?')">Hapus</button>
                                         </form>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </main>
     </div>
+
 </body>
 </html>

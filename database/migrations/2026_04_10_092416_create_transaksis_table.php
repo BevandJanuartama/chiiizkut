@@ -13,10 +13,14 @@ return new class extends Migration
     {
         Schema::create('transaksis', function (Blueprint $table) {
             $table->id();
-            $table->string('nama')->nullable(); // Untuk menyimpan nama pelanggan
+            $table->string('nama')->nullable();
             $table->string('telepon')->nullable();
-            $table->decimal('total', 12, 2);    // Menggunakan 12 digit agar aman untuk nominal Rupiah besar
-            $table->string('metode_pembayaran')->nullable(); // 'cash' atau 'qris'
+            $table->decimal('total', 15, 2); // Naikkan ke 15 digit agar lebih lega untuk Rupiah
+            $table->string('metode_pembayaran')->nullable(); 
+            
+            // TAMBAHKAN KOLOM INI AGAR CONTROLLER TIDAK ERROR
+            $table->integer('nomor_antrean')->default(0); 
+            
             $table->timestamps();
         });
     }
