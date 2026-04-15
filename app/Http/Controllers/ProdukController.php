@@ -4,11 +4,58 @@ namespace App\Http\Controllers;
 
 use App\Models\Produk;
 use App\Models\StokLog;
+use App\Models\Transaksi;
+use App\Models\DetailTransaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use App\Events\StokUpdated;
+use Carbon\Carbon;
 
 class ProdukController extends Controller
 {
+    public function dashboard()
+    {
+        // Statistik Ringkas (Top Cards)
+        $pendapatanHariIni = Transaksi::where('status', 'sukses')
+            ->whereDate('created_at', Carbon::today())
+            ->sum('total');
+
+        $totalPesananHariIni = Transaksi::whereDate('created_at', Carbon::today())->count();
+        $stokMenipis = Produk::where('stok', '<', 10)->count();
+        $totalProduk = Produk::count();
+
+        // Data Grafik Penjualan 7 Hari Terakhir
+        $weeklySales = Transaksi::where('status', 'sukses')
+            ->where('created_at', '>=', Carbon::now()->subDays(6))
+            ->select(
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(total) as total')
+            )
+            ->groupBy('date')
+            ->orderBy('date', 'ASC')
+            ->get();
+
+        // Data Produk Terlaris (Top 5)
+        $topProducts = DetailTransaksi::select('produks.nama_produk', DB::raw('SUM(qty) as total_qty'))
+            ->join('produks', 'produks.id', '=', 'detail_transaksis.produk_id')
+            ->join('transaksis', 'transaksis.id', '=', 'detail_transaksis.transaksi_id')
+            ->where('transaksis.status', 'sukses')
+            ->groupBy('produks.nama_produk')
+            ->orderBy('total_qty', 'DESC')
+            ->take(5)
+            ->get();
+
+        return view('admin.dashboard', compact(
+            'pendapatanHariIni', 
+            'totalPesananHariIni', 
+            'stokMenipis', 
+            'totalProduk',
+            'weeklySales',
+            'topProducts'
+        ));
+    }
+
     // 1. Menampilkan Daftar Produk
     public function index()
     {
@@ -113,28 +160,40 @@ class ProdukController extends Controller
         return view('admin.produk.stok', compact('produks'));
     }
 
-    public function updateStok(Request $request) {
+    public function updateStok(Request $request) 
+    {
         $request->validate([
             'produk_id' => 'required|exists:produks,id',
             'jumlah_stok' => 'required|integer|min:1',
             'keterangan' => 'nullable|string'
         ]);
 
-        $produk = Produk::findOrFail($request->produk_id);
-        $stokAwal = $produk->stok;
-        $stokBaru = $stokAwal + $request->jumlah_stok;
+        try {
+            return DB::transaction(function () use ($request) {
+                $produk = \App\Models\Produk::findOrFail($request->produk_id);
+                $stokAwal = $produk->stok;
+                $stokBaru = $stokAwal + $request->jumlah_stok;
 
-        $produk->update(['stok' => $stokBaru]);
+                // 1. Update stok di database
+                $produk->update(['stok' => $stokBaru]);
 
-        StokLog::create([
-            'produk_id' => $produk->id,
-            'jumlah_masuk' => $request->jumlah_stok,
-            'stok_sebelumnya' => $stokAwal,
-            'stok_sesudahnya' => $stokBaru,
-            'keterangan' => $request->keterangan ?? 'Stok Masuk Baru',
-        ]);
+                // 2. Catat log stok
+                \App\Models\StokLog::create([
+                    'produk_id' => $produk->id,
+                    'jumlah_masuk' => $request->jumlah_stok,
+                    'stok_sebelumnya' => $stokAwal,
+                    'stok_sesudahnya' => $stokBaru,
+                    'keterangan' => $request->keterangan ?? 'Stok Masuk Baru',
+                ]);
 
-        return redirect()->route('stok.logs')->with('success', "Stok {$produk->nama_produk} berhasil ditambah!");
+                // 3. BROADCAST: Update ke semua layar user/pembeli
+                broadcast(new \App\Events\StokUpdated($produk->id, $stokBaru))->toOthers();
+
+                return redirect()->route('stok.logs')->with('success', "Stok {$produk->nama_produk} berhasil ditambah!");
+            });
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal update stok: ' . $e->getMessage());
+        }
     }
 
     public function stokLogs()

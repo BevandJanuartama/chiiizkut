@@ -15,9 +15,10 @@
         .neo-card:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0px 0px rgba(0,0,0,1); }
         .active-category { background-color: #F2AF17 !important; color: black !important; border: 4px solid black !important; box-shadow: 4px 4px 0px 0px black; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-100 text-black overflow-hidden" x-data="kioskApp({{ $produks->toJson() }})">
+<body class="bg-gray-100 text-black overflow-hidden" x-data="kioskApp({{ $produks->toJson() }})" x-init="init()">
 
     <div class="flex flex-col lg:flex-row h-screen w-full overflow-hidden">
         
@@ -44,7 +45,11 @@
             <div class="flex-1 overflow-y-auto p-8 bg-gray-50/50">
                 <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-8">
                     <template x-for="product in filteredProducts" :key="product.id">
-                        <div @click="addToCart(product)" class="neo-card rounded-[2.5rem] p-4 bg-white cursor-pointer group">
+                        <div @click="addToCart(product)" class="neo-card rounded-[2.5rem] p-4 bg-white cursor-pointer group relative">
+                            <div x-show="product.stok <= 0" class="absolute inset-0 bg-white/60 z-10 rounded-[2.5rem] flex items-center justify-center backdrop-blur-[1px]">
+                                <span class="bg-black text-white px-3 py-1 rounded-full text-[10px] font-black uppercase">Habis</span>
+                            </div>
+                            
                             <div class="aspect-square bg-gray-100 rounded-[2rem] mb-4 overflow-hidden border-2 border-black">
                                 <img :src="'/storage/' + product.image" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                             </div>
@@ -54,7 +59,9 @@
                                 <div class="w-8 h-8 bg-black text-chiiiz rounded-full flex items-center justify-center font-black" 
                                      :class="product.stok <= 0 ? 'bg-gray-400 opacity-50' : ''">+</div>
                             </div>
-                            <p class="text-[9px] font-bold mt-1 text-gray-400 uppercase" x-text="'Stok: ' + product.stok"></p>
+                            <p class="text-[9px] font-bold mt-1 uppercase transition-colors duration-300" 
+                               :class="product.stok <= 0 ? 'text-red-500 font-black' : 'text-gray-400'"
+                               x-text="product.stok <= 0 ? 'STOK HABIS' : 'Stok: ' + product.stok"></p>
                         </div>
                     </template>
                 </div>
@@ -149,6 +156,8 @@
         </div>
     </div>
 
+    @vite(['resources/js/app.js'])
+
     <script>
         function kioskApp(dbProducts) {
             return {
@@ -166,6 +175,7 @@
                     { id: 'whole', name: 'Whole', icon: '🎂' },
                     { id: 'drink', name: 'Drink', icon: '🥤' }
                 ],
+                // Mapping produk awal dari database
                 products: dbProducts.map(p => ({
                     id: p.id, 
                     name: p.nama_produk, 
@@ -175,6 +185,42 @@
                     category: p.nama_produk.toLowerCase().includes('drink') ? 'drink' : (p.nama_produk.toLowerCase().includes('whole') ? 'whole' : 'slice')
                 })),
 
+                // REAL-TIME LISTENER
+                init() {
+                    // Gunakan setTimeout agar Echo dipastikan sudah ter-load dari app.js
+                    setTimeout(() => {
+                        if (typeof window.Echo !== 'undefined') {
+                            console.log('Echo aktif, mendengarkan channel inventory...');
+                            
+                            window.Echo.channel('inventory')
+                                .listen('StokUpdated', (e) => {
+                                    console.log('Data diterima:', e);
+
+                                    // Ambil ID & Stok (mendukung berbagai format penamaan)
+                                    const incomingId = e.produk_id || e.produkId;
+                                    const incomingStok = e.stok_baru || e.stokBaru;
+
+                                    if (incomingId !== undefined) {
+                                        // Cari produk di array internal Alpine
+                                        let target = this.products.find(p => p.id == incomingId);
+                                        if (target) {
+                                            console.log(`Update stok ${target.name}: ${target.stok} -> ${incomingStok}`);
+                                            target.stok = parseInt(incomingStok);
+                                            
+                                            // Update stok di keranjang jika item tersebut sedang dipilih
+                                            let inCart = this.cart.find(item => item.id == incomingId);
+                                            if (inCart && inCart.qty > target.stok) {
+                                                inCart.qty = target.stok;
+                                            }
+                                        }
+                                    }
+                                });
+                        } else {
+                            console.error('Echo tidak ditemukan! Pastikan terminal npm run dev tetap menyala.');
+                        }
+                    }, 500);
+                },
+
                 get filteredProducts() { 
                     return this.activeCategory === 'all' ? this.products : this.products.filter(p => p.category === this.activeCategory); 
                 },
@@ -182,15 +228,25 @@
                 get totalItems() { return this.cart.reduce((sum, i) => sum + i.qty, 0); },
 
                 addToCart(p) {
-                    let existing = this.cart.find(item => item.id === p.id);
-                    if (existing) {
-                        if(existing.qty < p.stok) existing.qty++;
-                        else alert('Maaf, stok sudah habis!');
+                    // Selalu cek stok terbaru dari state products
+                    let productInState = this.products.find(prod => prod.id === p.id);
+                    let existingInCart = this.cart.find(item => item.id === p.id);
+                    
+                    if (existingInCart) {
+                        if(existingInCart.qty < productInState.stok) {
+                            existingInCart.qty++;
+                        } else {
+                            alert('Stok tidak mencukupi untuk menambah item!');
+                        }
                     } else {
-                        if(p.stok > 0) this.cart.push({ ...p, qty: 1 });
-                        else alert('Maaf, produk ini sedang kosong!');
+                        if(productInState.stok > 0) {
+                            this.cart.push({ ...productInState, qty: 1 });
+                        } else {
+                            alert('Maaf, produk ini sedang habis!');
+                        }
                     }
                 },
+
                 removeFromCart(index) {
                     if (this.cart[index].qty > 1) this.cart[index].qty--;
                     else this.cart.splice(index, 1);
@@ -198,15 +254,11 @@
 
                 selectPayment(method) {
                     this.paymentMethod = method;
-                    if(method === 'qris') {
-                        this.step = 'qris_display';
-                    } else {
-                        this.step = 'customer';
-                    }
+                    this.step = (method === 'qris') ? 'qris_display' : 'customer';
                 },
 
                 async finishOrder() {
-                    if(!this.customerName || !this.customerPhone) return alert('Harap lengkapi Nama dan No WhatsApp!');
+                    if(!this.customerName || !this.customerPhone) return alert('Harap lengkapi Data!');
                     
                     try {
                         const response = await fetch("{{ route('checkout') }}", {
@@ -217,7 +269,7 @@
                             },
                             body: JSON.stringify({
                                 total: this.cartTotal,
-                                items: this.cart,
+                                items: this.cart, // Berisi id, qty, dan price
                                 name: this.customerName,
                                 phone: this.customerPhone,
                                 payment_method: this.paymentMethod
@@ -227,12 +279,13 @@
                         const result = await response.json();
                         if(result.success) {
                             this.queueNumber = result.queue_number.toString().padStart(3, '0');
+                            this.cart = []; // Kosongkan keranjang
                             this.step = 'success';
                         } else {
                             alert(result.message);
                         }
                     } catch (error) { 
-                        alert('Terjadi kesalahan sistem. Silakan hubungi kasir.'); 
+                        alert('Error Sistem: Cek Koneksi Reverb/Database'); 
                     }
                 },
 

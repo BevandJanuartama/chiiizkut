@@ -10,7 +10,7 @@ class Transaksi extends Model
     use HasFactory;
 
     // Masukkan 'nama' jika kamu ingin menyimpan nama pelanggan dari Kiosk
-    protected $fillable = ['nama', 'telepon', 'total', 'metode_pembayaran', 'nomor_antrean'];
+    protected $fillable = ['nama', 'telepon', 'total', 'metode_pembayaran', 'nomor_antrean', 'status'];
 
     /**
      * Relasi ke Detail: Satu transaksi punya banyak baris detail.

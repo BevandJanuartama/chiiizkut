@@ -7,57 +7,63 @@ use App\Models\Produk;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
-// 1. Landing Page
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// --- 1. Public Routes ---
 Route::get('/', function () {
     $produks = Produk::all();
     return view('welcome', compact('produks'));
-});
-
-// 2. Dashboard Universal (Bridge)
-// Ini adalah rute tengah. Jika user mengetik /dashboard, 
-// dia akan dilempar ke dashboard sesuai role-nya.
-Route::get('/dashboard', function () {
-    $user = Auth::user();
-    if ($user->role === 'admin') {
-        return redirect()->route('admin.dashboard');
-    } elseif ($user->role === 'kasir') {
-        return redirect()->route('kasir.dashboard');
-    }
-    abort(403, 'Role tidak terdaftar.');
-})->middleware(['auth'])->name('dashboard');
-
-// 3. Grup Route dengan Proteksi Login (Auth)
-Route::middleware('auth')->group(function () {
-    
-    // Rute Khusus Admin
-    Route::get('/admin/dashboard', function () {
-        if (Auth::user()->role !== 'admin') { abort(403); }
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
-
-
-    Route::resource('admin/produks', ProdukController::class);
-
-    // Halaman form tambah stok
-    Route::get('admin/stok/tambah', [ProdukController::class, 'editStok'])->name('stok.edit');
-    // Proses update stok ke database
-    Route::put('admin/stok/update', [ProdukController::class, 'updateStok'])->name('stok.update');
-
-    Route::get('admin/stok/logs', [ProdukController::class, 'stokLogs'])->name('stok.logs');
-
-    // Rute Khusus Kasir
-    Route::get('/kasir/dashboard', function () {
-        if (Auth::user()->role !== 'kasir') { abort(403); }
-        return view('kasir.dashboard');
-    })->name('kasir.dashboard');
-
-    // Profile Settings (Bawaan Breeze)
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+})->name('kiosk');
 
 Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checkout');
-Route::resource('transaksis', TransaksiController::class);
+
+
+// --- 2. Authenticated Routes ---
+Route::middleware('auth')->group(function () {
+
+    // Bridge: Mengarahkan /dashboard ke route yang sesuai role
+    Route::get('/dashboard', function () {
+        $role = Auth::user()->role;
+        if ($role === 'admin') return redirect()->route('admin.dashboard');
+        if ($role === 'kasir') return redirect()->route('kasir.dashboard');
+        abort(403, 'Role tidak terdaftar.');
+    })->name('dashboard');
+
+    // --- Rute Khusus Admin ---
+    Route::middleware('can:admin')->prefix('admin')->group(function () {
+        // Dashboard Admin (Full Info Statistik)
+        Route::get('/dashboard', [ProdukController::class, 'dashboard'])->name('admin.dashboard');
+
+        // Manajemen Produk (CRUD)
+        Route::resource('produks', ProdukController::class);
+
+        // Manajemen Stok
+        Route::controller(ProdukController::class)->group(function () {
+            Route::get('/stok/tambah', 'editStok')->name('stok.edit');
+            Route::put('/stok/update', 'updateStok')->name('stok.update');
+            Route::get('/stok/logs', 'stokLogs')->name('stok.logs');
+        });
+    });
+
+    // --- Rute Khusus Kasir ---
+    Route::middleware('can:kasir')->prefix('kasir')->group(function () {
+        Route::get('/dashboard', [TransaksiController::class, 'index'])->name('kasir.dashboard');
+    });
+
+    // --- Rute Transaksi Umum (Bisa diakses Admin/Kasir) ---
+    Route::patch('/transaksi/{id}/status', [TransaksiController::class, 'updateStatus'])->name('transaksi.updateStatus');
+    Route::resource('transaksis', TransaksiController::class)->except(['create', 'store']);
+
+    // --- Profile Settings ---
+    Route::controller(ProfileController::class)->group(function () {
+        Route::get('/profile', 'edit')->name('profile.edit');
+        Route::patch('/profile', 'update')->name('profile.update');
+        Route::delete('/profile', 'destroy')->name('profile.destroy');
+    });
+});
 
 require __DIR__.'/auth.php';
