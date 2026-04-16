@@ -16,8 +16,8 @@ class TransaksiController extends Controller
     public function index()
     {
         $transaksis = Transaksi::with('details.produk')
-                        ->orderBy('created_at', 'desc')
-                        ->get();
+            ->orderBy('created_at', 'desc')
+            ->paginate(7); 
 
         return view('kasir.dashboard', compact('transaksis'));
     }
@@ -161,7 +161,6 @@ class TransaksiController extends Controller
                 'message' => 'Pesanan berhasil dibuat',
                 'queue_number' => $result['queue_number']
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

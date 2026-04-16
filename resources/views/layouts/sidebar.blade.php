@@ -1,31 +1,107 @@
-<aside class="w-64 bg-black text-white p-6 flex flex-col border-r-4 border-chiiiz min-h-screen sticky top-0">
-    <div class="mb-12 text-center">
-        <h1 class="text-3xl font-black italic text-chiiiz tracking-tighter">ChiiiZkut.</h1>
-        <p class="text-xs uppercase font-bold text-gray-500 tracking-widest mt-1">Admin Panel</p>
+<style>
+    /* CSS Khusus Sidebar Artisanal */
+    .sidebar-artisanal {
+        width: 280px;
+        min-height: 100vh;
+        background-color: #ffffff; 
+        border-right: 1px solid var(--card-border);
+        position: sticky;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        padding: 2rem 1.5rem;
+        z-index: 1000;
+    }
+
+    .nav-link-custom {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        padding: 0.9rem 1.2rem;
+        color: var(--text-brown);
+        border-radius: 14px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        margin-bottom: 0.4rem;
+    }
+
+    .nav-link-custom:hover {
+        background-color: #FFF4E0; /* Soft yellow hover */
+        color: var(--brand-dark);
+    }
+
+    .nav-link-custom.active {
+        background-color: var(--brand-yellow);
+        color: var(--text-brown);
+        box-shadow: 0 4px 12px rgba(246, 170, 28, 0.2);
+    }
+
+    .nav-link-custom i {
+        font-size: 1.25rem;
+    }
+
+    .btn-logout {
+        background-color: #fff;
+        color: #DC3545;
+        border: 1px solid #DC3545;
+        font-weight: 700;
+        border-radius: 14px;
+        transition: all 0.2s;
+    }
+
+    .btn-logout:hover {
+        background-color: #DC3545;
+        color: #fff;
+        box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2);
+    }
+</style>
+
+<aside class="sidebar-artisanal">
+    <div class="text-center mb-5">
+        <a href="{{ route('admin.dashboard') }}" class="d-inline-block text-decoration-none">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo ChiiiZkut" class="img-fluid mb-1" style="max-height: 70px; object-fit: contain;">
+        </a>
+        <p class="text-muted fw-bold text-uppercase mt-2" style="letter-spacing: 2px; font-size: 0.65rem;">
+            Admin Panel
+        </p>
     </div>
     
-    <nav class="space-y-3 flex-grow">
-        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 py-3 px-4 {{ request()->routeIs('admin.dashboard') ? 'bg-chiiiz text-black' : 'text-gray-300 hover:text-white hover:bg-gray-800' }} rounded-xl font-extrabold transition shadow-md">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-            Dashboard
+    <nav class="d-flex flex-column flex-grow-1 mt-2">
+        <a href="{{ route('admin.dashboard') }}" class="nav-link-custom {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <i class="bi bi-house-door"></i>
+            <span>Dashboard</span>
         </a>
 
-        <a href="{{ route('produks.index') }}" class="flex items-center gap-3 py-3 px-4 {{ request()->is('admin/produk*') ? 'bg-chiiiz text-black' : 'text-gray-300 hover:text-white hover:bg-gray-800' }} rounded-xl transition font-semibold">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-            Produk Cake
+        <a href="{{ route('produks.index') }}" class="nav-link-custom {{ request()->is('admin/produk*') ? 'active' : '' }}">
+            <i class="bi bi-box-seam"></i>
+            <span>Produk Cake</span>
         </a>
 
-        <a href="{{ route('stok.logs') }}" class="flex items-center gap-3 py-3 px-4 {{ request()->is('admin/stok/logs') ? 'bg-chiiiz text-black' : 'text-gray-300 hover:text-white hover:bg-gray-800' }} rounded-xl transition font-semibold">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-            Riwayat Stok
+        <a href="{{ route('stok.logs') }}" class="nav-link-custom {{ request()->is('admin/stok/logs') ? 'active' : '' }}">
+            <i class="bi bi-clock-history"></i>
+            <span>Riwayat Stok</span>
         </a>
     </nav>
 
-    <div class="border-t-2 border-gray-800 pt-6">
+    <div class="mt-auto pt-4" style="border-top: 1px solid var(--card-border);">
+        
+        <div class="d-flex align-items-center gap-3 mb-4 px-2">
+            <div class="rounded-circle bg-soft-yellow d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                <i class="bi bi-person-badge-fill text-brand-yellow fs-5"></i>
+            </div>
+            <div>
+                <p class="mb-0 fw-bold text-brand-dark" style="font-size: 0.9rem;">Administrator</p>
+                <p class="mb-0 text-success fw-semibold" style="font-size: 0.7rem;">
+                    <i class="bi bi-circle-fill me-1" style="font-size: 0.4rem; vertical-align: middle;"></i>Online
+                </p>
+            </div>
+        </div>
+
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="w-full flex items-center justify-center gap-2 py-3 px-4 bg-red-600 hover:bg-black text-white font-black rounded-xl border-2 border-black transition-all group shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1">
-                LOGOUT
+            <button type="submit" class="btn btn-logout w-100 d-flex justify-content-center align-items-center gap-2 py-2">
+                <i class="bi bi-box-arrow-right fs-5"></i> LOGOUT
             </button>
         </form>
     </div>

@@ -1,144 +1,214 @@
 @extends('layouts.admin')
 
 @section('content')
-<header class="flex justify-between items-center mb-12">
-    <div>
-        <h2 class="text-4xl font-black tracking-tight uppercase">Dashboard <span class="text-chiiiz italic">Statistik</span></h2>
-        <p class="text-gray-600 mt-1 font-medium">Laporan real-time performa toko Anda.</p>
-    </div>
-    <div class="text-right">
-        <p class="font-bold text-lg bg-black text-white px-4 py-1 rounded-full border-2 border-chiiiz">
-            {{ now()->isoFormat('D MMMM YYYY') }}
-        </p>
-    </div>
-</header>
-
-<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-    <div class="card-neo bg-white p-6 flex items-center gap-4 border-chiiiz">
-        <div class="p-3 bg-chiiiz rounded-2xl border-2 border-black">
-            <svg class="w-8 h-8 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-        </div>
+    <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 gap-3">
         <div>
-            <p class="text-[10px] font-black uppercase text-gray-400">Pendapatan Hari Ini</p>
-            <p class="text-2xl font-black">Rp {{ number_format($pendapatanHariIni, 0, ',', '.') }}</p>
+            <h1 class="font-serif fw-bold mb-1">Halo, Selamat Pagi!</h1>
+            <p class="text-muted mb-0">Siap mengecek performa toko hari ini?</p>
         </div>
+    </header>
+
+    <div class="d-flex justify-content-between align-items-end mb-3">
+        <h4 class="font-serif fw-bold mb-0">Highlight Toko</h4>
+        <span class="text-muted small fw-semibold">{{ now()->isoFormat('D MMMM YYYY') }}</span>
     </div>
 
-    <div class="card-neo bg-white p-6 flex items-center gap-4 border-black">
-        <div class="p-3 bg-blue-500 rounded-2xl border-2 border-black">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-width="3" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-            </svg>
+    <section class="row g-4 mb-5">
+        <div class="col-lg-6">
+            <div class="card promo-card-1 p-4 h-100 position-relative overflow-hidden">
+                <span class="badge bg-white text-dark rounded-pill mb-3" style="width: fit-content; font-size: 0.7rem;">HARI
+                    INI</span>
+                <h3 class="fw-bold mb-1 text-white">Total Pendapatan</h3>
+                <h2 class="fw-bolder fs-1 mb-4 text-white">Rp {{ number_format($pendapatanHariIni, 0, ',', '.') }}</h2>
+                <button class="btn-promo text-white">Uang Masuk</button>
+                <i class="bi bi-wallet2 position-absolute"
+                    style="font-size: 8rem; opacity: 0.1; right: -20px; bottom: -20px;"></i>
+            </div>
         </div>
-        <div>
-            <p class="text-[10px] font-black uppercase text-gray-400">Total Pesanan</p>
-            <p class="text-2xl font-black">{{ $totalPesananHariIni }} Pesanan</p>
-        </div>
-    </div>
 
-    <div class="card-neo bg-white p-6 flex items-center gap-4 border-red-500">
-        <div class="p-3 bg-red-500 rounded-2xl border-2 border-black">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-width="3" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-            </svg>
+        <div class="col-lg-6">
+            <div class="card promo-card-2 p-4 h-100 position-relative overflow-hidden">
+                <span class="badge bg-light text-dark rounded-pill mb-3"
+                    style="width: fit-content; font-size: 0.7rem;">HARI INI</span>
+                <h3 class="fw-bold mb-1">Pesanan Masuk</h3>
+                <h2 class="fw-bolder fs-1 mb-4">{{ $totalPesananHariIni }} <span class="fs-5 fw-medium">Order</span></h2>
+                <button class="btn-promo">Total Pesanan</button>
+                <i class="bi bi-bag-check position-absolute"
+                    style="font-size: 8rem; opacity: 0.1; right: -10px; bottom: -30px;"></i>
+            </div>
         </div>
-        <div>
-            <p class="text-[10px] font-black uppercase text-gray-400">Stok Menipis (<10)</p>
-            <p class="text-2xl font-black text-red-600">{{ $stokMenipis }} Produk</p>
-        </div>
-    </div>
+    </section>
 
-    <div class="card-neo bg-white p-6 flex items-center gap-4 border-black">
-        <div class="p-3 bg-black rounded-2xl border-2 border-chiiiz">
-            <svg class="w-8 h-8 text-chiiiz" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-width="3" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-            </svg>
+    <h4 class="font-serif fw-bold mb-4">Statistik Operasional</h4>
+    <section class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card card-soft p-4 d-flex flex-row align-items-center gap-3 h-100">
+                <div class="icon-box-soft bg-soft-red flex-shrink-0">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+                <div>
+                    <p class="small text-muted fw-bold text-uppercase mb-1" style="letter-spacing: 0.5px;">
+                        Stok Menipis (&lt;10)
+                    </p>
+                    <h4 class="fw-bolder text-danger mb-0">{{ $stokMenipis }} Produk</h4>
+                </div>
+            </div>
         </div>
-        <div>
-            <p class="text-[10px] font-black uppercase text-gray-400">Varian Produk</p>
-            <p class="text-2xl font-black">{{ $totalProduk }} Item</p>
-        </div>
-    </div>
-</section>
 
-<section class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-    <div class="xl:col-span-2 card-neo p-8 bg-white">
-        <h3 class="text-2xl font-black mb-6 uppercase italic">Tren Mingguan <span class="text-gray-300">/ Sales</span></h3>
-        <div class="h-80">
-            <canvas id="salesTrendChart"></canvas>
+        <div class="col-md-4">
+            <div class="card card-soft p-4 d-flex flex-row align-items-center gap-3 h-100">
+                <div class="icon-box-soft bg-soft-brown flex-shrink-0">
+                    <i class="bi bi-grid-fill"></i>
+                </div>
+                <div>
+                    <p class="small text-muted fw-bold text-uppercase mb-1" style="letter-spacing: 0.5px;">Total Varian
+                        Produk</p>
+                    <h4 class="fw-bolder text-brand-dark mb-0">{{ $totalProduk }} Item</h4>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="card-neo p-8 bg-white border-chiiiz">
-        <h3 class="text-2xl font-black mb-6 uppercase italic text-center">Top <span class="text-chiiiz">Selling</span></h3>
-        <div class="h-80">
-            <canvas id="productFavoriteChart"></canvas>
+        <div class="col-md-4">
+            <div class="card card-soft p-4 d-flex flex-row align-items-center gap-3 h-100">
+                <div class="icon-box-soft flex-shrink-0" style="background-color: #E3F2FD; color: #0277BD;">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+                <div>
+                    <p class="small text-muted fw-bold text-uppercase mb-1" style="letter-spacing: 0.5px;">Menunggu Diproses
+                    </p>
+
+                    <h4 class="fw-bolder mb-0" style="color: #0277BD;">
+                        {{ $pesananPending }} Antrean
+                    </h4>
+
+                </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+
+    <section class="row g-4">
+        <div class="col-xl-8">
+            <div class="card card-soft p-4">
+                <h5 class="font-serif fw-bold mb-4">Tren Mingguan <span class="text-muted fw-normal fs-6">/ Penjualan</span>
+                </h5>
+                <div style="height: 320px;">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card card-soft p-4 h-100">
+                <h5 class="font-serif fw-bold mb-4 text-center">Top Selling</h5>
+                <div style="height: 280px; display: flex; justify-content: center;">
+                    <canvas id="productFavoriteChart"></canvas>
+                </div>
+                <p class="text-center text-muted small mt-3 fw-medium">Berdasarkan total item terjual</p>
+            </div>
+        </div>
+    </section>
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if (typeof Chart === 'undefined') return;
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            if (typeof Chart === 'undefined') return;
 
-        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
-        Chart.defaults.color = '#000000';
+            // Sesuaikan font chart dengan tema aplikasi
+            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+            Chart.defaults.color = '#5C3D2E';
+            Chart.defaults.font.weight = '600';
 
-        // 1. Grafik Tren (Data dari Controller)
-        const weeklyData = @json($weeklySales);
-        const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
-        new Chart(salesCtx, {
-            type: 'line',
-            data: {
-                labels: weeklyData.map(d => d.date),
-                datasets: [{
-                    label: 'Pendapatan (Rp)',
-                    data: weeklyData.map(d => d.total),
-                    borderColor: '#F2AF17',
-                    backgroundColor: 'rgba(242, 175, 23, 0.1)',
-                    borderWidth: 5,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 6,
-                    pointBackgroundColor: 'black'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true, grid: { display: false } },
-                    x: { grid: { display: false } }
+            // 1. Grafik Tren (Line Chart)
+            const weeklyData = @json($weeklySales);
+            const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+
+            // Efek gradient warna kuning/krem untuk line chart
+            let gradientFill = salesCtx.createLinearGradient(0, 0, 0, 300);
+            gradientFill.addColorStop(0, 'rgba(246, 170, 28, 0.2)');
+            gradientFill.addColorStop(1, 'rgba(246, 170, 28, 0)');
+
+            new Chart(salesCtx, {
+                type: 'line',
+                data: {
+                    labels: weeklyData.map(d => d.date),
+                    datasets: [{
+                        label: 'Pendapatan (Rp)',
+                        data: weeklyData.map(d => d.total),
+                        borderColor: '#F6AA1C',
+                        backgroundColor: gradientFill,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4, // Membuat garis melengkung (smooth curve)
+                        pointRadius: 4,
+                        pointBackgroundColor: '#8A4117',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                borderDash: [4, 4],
+                                color: '#EAE0D5'
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            border: {
+                                display: false
+                            }
+                        }
+                    }
                 }
-            }
-        });
+            });
 
-        // 2. Grafik Top Produk (Data dari Controller)
-        const topProducts = @json($topProducts);
-        const productCtx = document.getElementById('productFavoriteChart').getContext('2d');
-        new Chart(productCtx, {
-            type: 'doughnut',
-            data: {
-                labels: topProducts.map(p => p.nama_produk),
-                datasets: [{
-                    data: topProducts.map(p => p.total_qty),
-                    backgroundColor: ['#F2AF17', '#000000', '#3B82F6', '#EF4444', '#10B981'],
-                    borderColor: 'white',
-                    borderWidth: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20, font: { weight: 'bold' } } }
+            // 2. Grafik Top Produk (Doughnut Chart)
+            const topProducts = @json($topProducts);
+            const productCtx = document.getElementById('productFavoriteChart').getContext('2d');
+            new Chart(productCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: topProducts.map(p => p.nama_produk),
+                    datasets: [{
+                        data: topProducts.map(p => p.total_qty),
+                        // Palette warna senada dengan tema bakery (Kuning, Coklat, Krem)
+                        backgroundColor: ['#F6AA1C', '#8A4117', '#D4A373', '#FAEDCD', '#E9EDC9'],
+                        borderColor: '#FFF',
+                        borderWidth: 3,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '75%', // Membuat cincin lebih tipis agar lebih elegan
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    }
                 }
-            }
+            });
         });
-    });
-</script>
+    </script>
 @endpush

@@ -25,6 +25,9 @@ class ProdukController extends Controller
         $stokMenipis = Produk::where('stok', '<', 10)->count();
         $totalProduk = Produk::count();
 
+        // ---> INI TAMBAHAN BARUNYA: Mengambil data jumlah pesanan yang statusnya 'pending'
+        $pesananPending = Transaksi::where('status', 'pending')->count();
+
         // Data Grafik Penjualan 7 Hari Terakhir
         $weeklySales = Transaksi::where('status', 'sukses')
             ->where('created_at', '>=', Carbon::now()->subDays(6))
@@ -47,14 +50,16 @@ class ProdukController extends Controller
             ->get();
 
         return view('admin.dashboard', compact(
-            'pendapatanHariIni', 
-            'totalPesananHariIni', 
-            'stokMenipis', 
+            'pendapatanHariIni',
+            'totalPesananHariIni',
+            'stokMenipis',
             'totalProduk',
             'weeklySales',
-            'topProducts'
+            'topProducts',
+            'pesananPending' 
         ));
     }
+
 
     // 1. Menampilkan Daftar Produk
     public function index()
@@ -77,7 +82,7 @@ class ProdukController extends Controller
         $request->validate([
             'nama_produk' => 'required|string|max:255',
             'deskripsi'   => 'required',
-            'ukuran'      => 'required', 
+            'ukuran'      => 'required',
             'harga'       => 'required|numeric',
             'gambar'      => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -148,7 +153,7 @@ class ProdukController extends Controller
         if ($produk->gambar) {
             Storage::disk('public')->delete($produk->gambar);
         }
-        
+
         $produk->delete();
         return redirect()->route('produks.index')->with('success', 'Produk berhasil dihapus!');
     }
@@ -160,7 +165,7 @@ class ProdukController extends Controller
         return view('admin.produk.stok', compact('produks'));
     }
 
-    public function updateStok(Request $request) 
+    public function updateStok(Request $request)
     {
         $request->validate([
             'produk_id' => 'required|exists:produks,id',
@@ -204,5 +209,4 @@ class ProdukController extends Controller
         // Mengarahkan ke file blade yang tadi kita buat
         return view('admin.produk.stok_logs', compact('logs'));
     }
-    
 }
