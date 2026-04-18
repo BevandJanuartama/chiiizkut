@@ -4,7 +4,9 @@ use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransaksiController;
 use App\Models\Produk;
+use App\Models\DetailTransaksi;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -16,7 +18,25 @@ use Illuminate\Support\Facades\Auth;
 // --- 1. Public Routes ---
 Route::get('/', function () {
     $produks = Produk::all();
-    return view('welcome', compact('produks'));
+    
+    // AMBIL BEST SELLER 
+    $bestSellerProducts = DetailTransaksi::select(
+            'produks.id',
+            'produks.nama_produk',
+            'produks.harga',
+            'produks.gambar',
+            'produks.stok',
+            DB::raw('SUM(detail_transaksis.qty) as total_terjual')
+        )
+        ->join('produks', 'produks.id', '=', 'detail_transaksis.produk_id')
+        ->join('transaksis', 'transaksis.id', '=', 'detail_transaksis.transaksi_id')
+        ->where('transaksis.status', 'sukses')
+        ->groupBy('produks.id', 'produks.nama_produk', 'produks.harga', 'produks.gambar', 'produks.stok')
+        ->orderBy('total_terjual', 'DESC')
+        ->limit(10)
+        ->get();
+    
+    return view('welcome', compact('produks', 'bestSellerProducts'));
 })->name('kiosk');
 
 Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checkout');
