@@ -46,45 +46,29 @@ class TransaksiController extends Controller
         // KIRIM WA JIKA SUKSES
         // ===============================
         if ($request->status == 'sukses' && $transaksi->telepon) {
-
-            // Format nomor
             $phone = preg_replace('/[^0-9]/', '', $transaksi->telepon);
-            if (substr($phone, 0, 1) == '0') {
-                $phone = '62' . substr($phone, 1);
-            }
+            if (substr($phone, 0, 1) == '0') $phone = '62' . substr($phone, 1);
 
-            // Ambil detail pesanan
-            $message = "🧾 *INVOICE PEMBELIAN*\n";
-            $message .= "🧀 *CHIIIZKUT*\n";
+            $urlNota = route('nota.show', $transaksi->kode_unik);
+
+            $message = "🧾 *FAKTUR ELEKTRONIK*\n";
+            $message .= "*CHIIIZKUT*\n\n";
+            
+            $message .= "Nomor Nota:\n";
+            $message .= "*{$transaksi->kode_unik}*\n\n";
+
+            $message .= "Pelanggan Yth:\n";
+            $message .= "Kak {$transaksi->nama}\n\n";
+
             $message .= "=========================\n";
+            $message .= "Total Tagihan: *Rp " . number_format($transaksi->total) . "*\n";
+            $message .= "Status: *LUNAS*\n";
+            $message .= "=========================\n\n";
 
-            $message .= "👤 Nama: {$transaksi->nama}\n";
-            $message .= "🔢 No Antrian: {$transaksi->nomor_antrean}\n";
-            $message .= "💳 Metode: {$transaksi->metode_pembayaran}\n";
-            $message .= "📅 Tanggal: " . now()->format('d-m-Y H:i') . "\n";
-
-            $message .= "=========================\n";
-            $message .= "🛒 *Detail Pesanan:*\n";
-
-            foreach ($transaksi->details as $detail) {
-                $nama = $detail->produk->nama_produk;
-                $qty = $detail->qty;
-                $harga = number_format($detail->harga_satuan);
-                $subtotal = number_format($detail->subtotal);
-
-                $message .= "\n{$nama}\n";
-                $message .= "{$qty} x Rp {$harga}\n";
-                $message .= "Subtotal: Rp {$subtotal}\n";
-            }
-
-            $message .= "\n=========================\n";
-            $message .= "💰 *Total: Rp " . number_format($transaksi->total) . "*\n";
-            $message .= "=========================\n";
-
-            $message .= "✅ *Status: TRANSAKSI SELESAI*\n\n";
-
-            $message .= "Terima kasih telah berbelanja di *CHIIIZKUT* 🙌\n";
-            $message .= "Simpan pesan ini sebagai bukti pembayaran.";
+            $message .= "Klik link di bawah ini untuk melihat detail nota dan rincian pesanan:\n";
+            $message .= "🔗 {$urlNota}\n\n";
+            
+            $message .= "Terima kasih telah berbelanja di CHIIIZKUT! 🙌";
 
             Http::withHeaders([
                 'Authorization' => env('FONNTE_TOKEN')
@@ -96,6 +80,14 @@ class TransaksiController extends Controller
 
         return redirect()->route('kasir.dashboard')
             ->with('success', 'Status Pesanan #' . $transaksi->nomor_antrean . ' diperbarui.');
+    }
+
+    public function showNota($kode_unik)
+    {
+        // Cari berdasarkan kode_unik, bukan ID
+        $transaksi = Transaksi::with('details.produk')->where('kode_unik', $kode_unik)->firstOrFail();
+        
+        return view('nota_online', compact('transaksi'));
     }
 
     public function checkout(Request $request)
@@ -113,9 +105,11 @@ class TransaksiController extends Controller
 
         try {
             $result = DB::transaction(function () use ($request) {
-
                 $lastOrder = Transaksi::whereDate('created_at', now()->toDateString())->count();
                 $queueNumber = $lastOrder + 1;
+                
+                // Generate kode unik acak
+                $kodeUnik = strtoupper(bin2hex(random_bytes(6))); // Contoh: A1B2C3D4E5F6
 
                 $transaksi = Transaksi::create([
                     'nama' => $request->name,
@@ -124,6 +118,7 @@ class TransaksiController extends Controller
                     'metode_pembayaran' => $request->payment_method,
                     'nomor_antrean' => $queueNumber,
                     'status' => 'pending',
+                    'kode_unik' => $kodeUnik, // Simpan kode unik
                 ]);
 
                 foreach ($request->items as $item) {
