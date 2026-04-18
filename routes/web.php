@@ -15,29 +15,12 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 */
 
-// --- 1. Public Routes ---
 Route::get('/', function () {
-    $produks = Produk::all();
-    
-    // AMBIL BEST SELLER 
-    $bestSellerProducts = DetailTransaksi::select(
-            'produks.id',
-            'produks.nama_produk',
-            'produks.harga',
-            'produks.gambar',
-            'produks.stok',
-            DB::raw('SUM(detail_transaksis.qty) as total_terjual')
-        )
-        ->join('produks', 'produks.id', '=', 'detail_transaksis.produk_id')
-        ->join('transaksis', 'transaksis.id', '=', 'detail_transaksis.transaksi_id')
-        ->where('transaksis.status', 'sukses')
-        ->groupBy('produks.id', 'produks.nama_produk', 'produks.harga', 'produks.gambar', 'produks.stok')
-        ->orderBy('total_terjual', 'DESC')
-        ->limit(10)
-        ->get();
-    
-    return view('welcome', compact('produks', 'bestSellerProducts'));
-})->name('kiosk');
+
+    $produks = Produk::with('varians')->get();
+
+    return view('welcome', compact('produks'));
+});
 
 Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checkout');
 

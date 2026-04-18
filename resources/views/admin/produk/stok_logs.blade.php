@@ -38,21 +38,44 @@
                         <span class="block text-black">{{ $log->created_at->format('d M Y') }}</span>
                         <span class="text-gray-400 text-xs">{{ $log->created_at->format('H:i') }} WIB</span>
                     </td>
+
                     <td class="p-5">
-                        <span class="text-black uppercase font-black">{{ $log->produk->nama_produk }}</span>
+                        @php
+                            $produk = optional($log->produkVarian->produk);
+                            $ukuran = optional($log->produkVarian)->ukuran;
+                            $isSmall = $ukuran === 'small';
+                        @endphp
+
+                        <div class="flex items-center gap-2">
+                            <span class="text-black uppercase font-black">
+                                {{ $produk->nama_produk ?? '-' }}
+                            </span>
+
+                            @if($ukuran)
+                                <span class="px-2 py-1 text-xs border-2 border-black rounded-lg font-black
+                                    {{ $isSmall ? 'bg-blue-200 text-blue-800' : 'bg-orange-200 text-orange-800' }}">
+                                    {{ strtoupper($ukuran) }}
+                                </span>
+                            @endif
+                        </div>
                     </td>
+
                     <td class="p-5 text-center">
                         <span class="bg-green-100 text-green-700 px-4 py-1 rounded-full border-2 border-green-700 font-black">
                             +{{ $log->jumlah_masuk }}
                         </span>
                     </td>
+
                     <td class="p-5 text-center">
                         <div class="flex items-center justify-center gap-2 text-sm">
                             <span class="text-gray-400">{{ $log->stok_sebelumnya }}</span>
-                            <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                            <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                            </svg>
                             <span class="text-black font-black">{{ $log->stok_sesudahnya }}</span>
                         </div>
                     </td>
+
                     <td class="p-5 italic text-gray-600 text-sm">
                         {{ $log->keterangan ?? '-' }}
                     </td>

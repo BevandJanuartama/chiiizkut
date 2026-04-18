@@ -52,36 +52,49 @@
                             <tr class="border-b-4 border-black bg-gray-50">
                                 <th class="p-5 text-sm font-black uppercase tracking-widest">Gambar</th>
                                 <th class="p-5 text-sm font-black uppercase tracking-widest">Nama Produk</th>
-                                <th class="p-5 text-sm font-black uppercase tracking-widest">Ukuran</th>
-                                <th class="p-5 text-sm font-black uppercase tracking-widest">Harga</th>
-                                <th class="p-5 text-sm font-black uppercase tracking-widest text-center">Stok</th>
+                                <th class="p-5 text-sm font-black uppercase tracking-widest">Deskripsi</th>
+                                <th class="p-5 text-sm font-black uppercase tracking-widest text-center">Stok Small</th>
+                                <th class="p-5 text-sm font-black uppercase tracking-widest text-center">Stok Large</th>
                                 <th class="p-5 text-sm font-black uppercase tracking-widest text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y-2 divide-gray-100 font-semibold">
                             @foreach ($produks as $produk)
+                            @php
+                                $varianSmall = $produk->varians->where('ukuran', 'small')->first();
+                                $varianLarge = $produk->varians->where('ukuran', 'large')->first();
+                            @endphp
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="p-5">
                                     <img src="{{ asset('storage/'.$produk->gambar) }}" class="w-20 h-20 object-cover rounded-xl border-2 border-black shadow-sm">
                                 </td>
                                 <td class="p-5 text-lg font-bold">{{ $produk->nama_produk }}</td>
-                                <td class="p-5">
-                                    @if(is_array($produk->ukuran))
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach($produk->ukuran as $sz)
-                                                <span class="bg-black text-white px-2 py-1 rounded-md text-[10px] uppercase font-black tracking-tighter">{{ $sz }}</span>
-                                            @endforeach
-                                        </div>
+                                <td class="p-5 text-sm text-gray-600 max-w-xs">{{ Str::limit($produk->deskripsi, 60) }}</td>
+
+                                {{-- Stok Small --}}
+                                <td class="p-5 text-center">
+                                    @if($varianSmall)
+                                        <span class="inline-flex items-center justify-center px-3 py-1 rounded-lg border-2 font-black text-sm
+                                            {{ $varianSmall->stok <= 0 ? 'bg-red-100 border-red-400 text-red-600' : ($varianSmall->stok < 10 ? 'bg-yellow-100 border-yellow-400 text-yellow-700' : 'bg-green-100 border-green-400 text-green-700') }}">
+                                            {{ $varianSmall->stok }}
+                                        </span>
                                     @else
-                                        <span class="bg-black text-white px-2 py-1 rounded-md text-[10px] uppercase font-black">{{ $produk->ukuran }}</span>
+                                        <span class="text-gray-400 text-xs">—</span>
                                     @endif
                                 </td>
-                                <td class="p-5 text-chiiiz font-black">Rp {{ number_format($produk->harga, 0, ',', '.') }}</td>
+
+                                {{-- Stok Large --}}
                                 <td class="p-5 text-center">
-                                    <span class="inline-block px-4 py-1 rounded-full border-2 border-black font-black {{ $produk->stok < 10 ? 'bg-red-500 text-white' : 'bg-chiiiz text-black' }}">
-                                        {{ $produk->stok }}
-                                    </span>
+                                    @if($varianLarge)
+                                        <span class="inline-flex items-center justify-center px-3 py-1 rounded-lg border-2 font-black text-sm
+                                            {{ $varianLarge->stok <= 0 ? 'bg-red-100 border-red-400 text-red-600' : ($varianLarge->stok < 10 ? 'bg-yellow-100 border-yellow-400 text-yellow-700' : 'bg-green-100 border-green-400 text-green-700') }}">
+                                            {{ $varianLarge->stok }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400 text-xs">—</span>
+                                    @endif
                                 </td>
+
                                 <td class="p-5 text-right">
                                     <div class="flex justify-end items-center gap-4">
                                         <a href="{{ route('produks.edit', $produk->id) }}" class="text-blue-600 hover:underline font-black uppercase text-xs tracking-widest">Edit</a>

@@ -247,8 +247,9 @@
                                                 @foreach ($t->details as $detail)
                                                     <span class="badge bg-light text-dark border rounded-pill px-2 py-1"
                                                         style="font-weight: 500;">
-                                                        {{ $detail->produk->nama_produk }} <span
-                                                            class="text-muted ms-1">x{{ $detail->qty }}</span>
+                                                        {{ $detail->varian->produk->nama_produk }}
+                                                        <span class="text-warning ms-1 text-uppercase">{{ $detail->varian->ukuran }}</span>
+                                                        <span class="text-muted ms-1">x{{ $detail->qty }}</span>
                                                     </span>
                                                 @endforeach
                                             </div>

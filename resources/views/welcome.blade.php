@@ -155,6 +155,7 @@
             width: auto;
         }
 
+        /* ===== POPUP OVERLAY ===== */
         .popup-overlay {
             background: rgba(44, 44, 44, 0.6);
             backdrop-filter: blur(4px);
@@ -199,6 +200,33 @@
             margin-right: 8px;
         }
 
+        /* ===== PRODUCT DETAIL POPUP ===== */
+        .product-detail-img {
+            height: 250px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .size-card {
+            border: 2px solid #f0f0f0;
+            border-radius: 20px;
+            padding: 15px;
+            cursor: pointer;
+            flex: 1;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .size-card:hover {
+            border-color: #F2AF17;
+            background-color: #fffbf0;
+        }
+        .size-card.active {
+            border-color: #F2AF17;
+            background-color: #fffbf0;
+            box-shadow: 0 0 0 3px rgba(242,175,23,0.15);
+        }
+
+        /* ===== PAYMENT POPUP ===== */
         .payment-option-card {
             background: #f8f9fa;
             border: 2px solid #e9ecef;
@@ -238,6 +266,7 @@
             padding: 12px 20px;
             font-size: 1rem;
             transition: all 0.3s ease;
+            width: 100%;
         }
 
         .input-modern:focus {
@@ -255,6 +284,8 @@
             border-radius: 16px;
             border: none;
             transition: all 0.3s ease;
+            width: 100%;
+            display: block;
         }
 
         .btn-popup-primary:hover:not(:disabled) {
@@ -270,6 +301,8 @@
             border-radius: 16px;
             border: 2px solid #e9ecef;
             transition: all 0.3s ease;
+            width: 100%;
+            display: block;
         }
 
         .btn-popup-secondary:hover {
@@ -368,6 +401,7 @@
 
         <div class="row flex-grow-1 overflow-hidden" style="min-height: 0;">
             
+            <!-- MENU SECTION -->
             <div class="col-lg-8 h-100 overflow-auto custom-scrollbar pe-4 pb-4">
                 
                 <!-- BEST SELLER SECTION -->
@@ -397,10 +431,10 @@
                                     
                                     <div class="card-body d-flex flex-column p-3">
                                         <h6 class="card-title fw-bold mb-1 text-truncate" style="font-size: 0.95rem;" x-text="product.name"></h6>
-                                        <p class="card-text fw-semibold mb-3 text-muted" style="font-size: 0.85rem;" x-text="'Rp ' + product.price.toLocaleString('id-ID')"></p>
+                                        <p class="card-text text-muted small" x-text="product.deskripsi"></p>
                                         
                                         <div class="mt-auto">
-                                            <button @click="addToCart(product)" class="btn-tambah w-100 d-flex align-items-center justify-content-center" :disabled="product.stok <= 0">
+                                            <button @click="openDetail(product)" class="btn-tambah w-100 d-flex align-items-center justify-content-center" :disabled="product.stok <= 0">
                                                 <span class="icon-tambah"><i class="fas fa-plus"></i></span> Tambah
                                             </button>
                                         </div>
@@ -443,10 +477,9 @@
                                     
                                     <div class="card-body d-flex flex-column p-3">
                                         <h6 class="card-title fw-bold mb-1 text-truncate" style="font-size: 0.95rem;" x-text="product.name"></h6>
-                                        <p class="card-text fw-semibold mb-3 text-muted" style="font-size: 0.85rem;" x-text="'Rp ' + product.price.toLocaleString('id-ID')"></p>
                                         
                                         <div class="mt-auto">
-                                            <button @click="addToCart(product)" class="btn-tambah w-100 d-flex align-items-center justify-content-center" :disabled="product.stok <= 0">
+                                            <button @click="openDetail(product)" class="btn-tambah w-100 d-flex align-items-center justify-content-center" :disabled="product.stok <= 0">
                                                 <span class="icon-tambah"><i class="fas fa-plus"></i></span> Tambah
                                             </button>
                                         </div>
@@ -459,6 +492,7 @@
 
             </div>
 
+            <!-- SIDEBAR CART -->
             <div class="col-lg-4 h-100 d-flex flex-column pb-3">
                 <div class="sidebar-wrapper flex-grow-1 d-flex flex-column h-100">
                     
@@ -478,7 +512,7 @@
                             </div>
                         </template>
 
-                        <template x-for="(item, index) in cart" :key="item.id">
+                        <template x-for="(item, index) in cart" :key="item.cartKey">
                             <div class="cart-item p-2 mb-3 d-flex align-items-center"
                                  x-transition:enter="transition ease-out duration-300"
                                  x-transition:enter-start="opacity-0 translate-x-10"
@@ -489,13 +523,14 @@
                                  
                                 <img :src="'/storage/' + item.image" class="rounded-3 shadow-sm" style="width: 60px; height: 60px; object-fit: cover;">
                                 <div class="ms-3 flex-grow-1">
-                                    <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.85rem;" x-text="item.name"></h6>
+                                    <h6 class="mb-0 fw-bold text-dark" style="font-size: 0.85rem;" x-text="item.name"></h6>
+                                    <p class="mb-0 text-chiiiz fw-semibold" style="font-size: 0.75rem;" x-text="item.varianLabel" x-show="item.varianLabel"></p>
                                     <p class="mb-0 text-muted fw-semibold" style="font-size: 0.8rem;" x-text="'Rp ' + item.price.toLocaleString('id-ID')"></p>
                                 </div>
                                 <div class="d-flex align-items-center me-1">
                                     <button @click="removeFromCart(index)" class="qty-btn shadow-sm"><i class="fas fa-minus"></i></button>
                                     <span class="mx-2 fw-bold text-dark" style="font-size: 1rem; width: 20px; text-align: center;" x-text="item.qty"></span>
-                                    <button @click="addToCart(item)" class="qty-btn shadow-sm"><i class="fas fa-plus"></i></button>
+                                    <button @click="increaseQty(index)" class="qty-btn shadow-sm"><i class="fas fa-plus"></i></button>
                                 </div>
                             </div>
                         </template>
@@ -511,7 +546,11 @@
                             <div class="overflow-auto mb-1 custom-scrollbar" style="max-height: 70px;">
                                 <template x-for="item in cart">
                                     <div class="d-flex justify-content-between small mb-1 fw-semibold text-secondary">
-                                        <span class="text-truncate pe-2"><span x-text="item.name"></span> <span class="text-warning fw-bolder ms-1" x-text="'x' + item.qty"></span></span>
+                                        <span class="text-truncate pe-2">
+                                            <span x-text="item.name"></span>
+                                            <span x-show="item.varianLabel" class="text-chiiiz" x-text="' (' + item.varianLabel + ')'"></span>
+                                            <span class="text-warning fw-bolder ms-1" x-text="'x' + item.qty"></span>
+                                        </span>
                                         <span x-text="'Rp ' + (item.price * item.qty).toLocaleString('id-ID')"></span>
                                     </div>
                                 </template>
@@ -536,19 +575,97 @@
         </div>
     </div>
 
-    <!-- POPUP -->
-    <div x-show="openModal" class="position-fixed top-0 start-0 w-100 h-100 popup-overlay" style="z-index: 1050;" 
+    <!-- ====================================== -->
+    <!-- POPUP DETAIL PRODUK (PILIH VARIAN)     -->
+    <!-- ====================================== -->
+    <div x-show="showDetail" x-cloak
+         class="position-fixed top-0 start-0 w-100 h-100 popup-overlay"
+         style="z-index: 1060;"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         x-cloak>
+         x-transition:leave-end="opacity-0">
+
+        <div class="w-100 h-100 d-flex align-items-center justify-content-center p-4">
+            <div @click.away="showDetail = false"
+                 class="popup-container"
+                 style="width: 100%; max-width: 450px;"
+                 x-show="showDetail"
+                 x-transition:enter="transition ease-out duration-300 delay-100"
+                 x-transition:enter-start="opacity-0 scale-90 translate-y-5"
+                 x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave="transition ease-in duration-200"
+                 x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                 x-transition:leave-end="opacity-0 scale-90 translate-y-5">
+
+                <!-- Gambar Produk -->
+                <div class="position-relative">
+                    <img :src="selectedProduct ? '/storage/' + selectedProduct.image : ''"
+                         class="product-detail-img"
+                         alt="Product">
+                    <button @click="showDetail = false"
+                            class="btn btn-dark position-absolute top-0 end-0 m-3 rounded-circle d-flex align-items-center justify-content-center"
+                            style="width: 36px; height: 36px; opacity: 0.8; padding: 0;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Info Produk -->
+                <div class="p-4">
+                    <h4 class="fw-800 mb-1" style="font-weight: 800; color: #2c2c2c;" x-text="selectedProduct?.name"></h4>
+                    <p class="text-muted small mb-4" x-text="selectedProduct?.deskripsi"></p>
+
+                    <!-- Pilih Ukuran / Varian -->
+                    <template x-if="selectedProduct?.varians && selectedProduct.varians.length > 0">
+                        <div>
+                            <label class="fw-bold mb-3 d-block" style="color: #2c2c2c;">
+                                <i class="fas fa-tag me-1 text-chiiiz"></i> Pilih Ukuran:
+                            </label>
+                            <div class="d-flex gap-3 mb-4 flex-wrap">
+                                <template x-for="varian in selectedProduct.varians" :key="varian.id">
+                                    <div class="size-card"
+                                         :class="selectedVarian?.id === varian.id ? 'active' : ''"
+                                         @click="selectedVarian = varian">
+                                        <div class="text-uppercase small fw-bold text-muted mb-1" x-text="varian.ukuran"></div>
+                                        <div class="fw-bold" style="color: #F2AF17;" x-text="'Rp ' + parseInt(varian.harga).toLocaleString('id-ID')"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Total & Tombol Tambah -->
+                    <div class="pt-3 border-top">
+                        <button @click="addToCartFromDetail()"
+                                class="btn-popup-primary">
+                            <i class="fas fa-shopping-bag me-2"></i> Tambah ke Pesanan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================== -->
+    <!-- POPUP PEMBAYARAN / CHECKOUT            -->
+    <!-- ====================================== -->
+    <div x-show="openModal" x-cloak
+         class="position-fixed top-0 start-0 w-100 h-100 popup-overlay"
+         style="z-index: 1050;"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
          
         <div class="w-100 h-100 d-flex align-items-center justify-content-center p-4">
             
-            <div @click.away="if(step !== 'success') openModal = false" class="popup-container" style="width: 100%; max-width: 500px;"
+            <div @click.away="if(step !== 'success') openModal = false"
+                 class="popup-container"
+                 style="width: 100%; max-width: 500px;"
                  x-show="openModal"
                  x-transition:enter="transition ease-out duration-300 delay-100"
                  x-transition:enter-start="opacity-0 scale-90 translate-y-5"
@@ -557,6 +674,7 @@
                  x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                  x-transition:leave-end="opacity-0 scale-90 translate-y-5">
                 
+                <!-- Step: Pilih Pembayaran -->
                 <div x-show="step === 'payment'">
                     <div class="popup-header">
                         <h4 class="text-center">
@@ -584,12 +702,13 @@
                                 </div>
                             </div>
                         </div>
-                        <button @click="openModal = false" class="btn-popup-secondary w-100 mt-4">
+                        <button @click="openModal = false" class="btn-popup-secondary mt-4">
                             <i class="fas fa-arrow-left me-2"></i> Batal
                         </button>
                     </div>
                 </div>
 
+                <!-- Step: Tampil QRIS -->
                 <div x-show="step === 'qris_display'" x-cloak>
                     <div class="popup-header">
                         <h4 class="text-center">
@@ -616,15 +735,16 @@
                                 <i class="fas fa-info-circle me-1"></i> Scan menggunakan E-Wallet atau M-Banking
                             </p>
                         </div>
-                        <button @click="step = 'customer'" class="btn-popup-primary w-100 mt-4">
+                        <button @click="step = 'customer'" class="btn-popup-primary mt-4">
                             <i class="fas fa-check-circle me-2"></i> Saya Sudah Bayar
                         </button>
-                        <button @click="step = 'payment'" class="btn-popup-secondary w-100 mt-2">
+                        <button @click="step = 'payment'" class="btn-popup-secondary mt-2">
                             <i class="fas fa-arrow-left me-2"></i> Kembali
                         </button>
                     </div>
                 </div>
 
+                <!-- Step: Data Customer (Cash) -->
                 <div x-show="step === 'customer' && paymentMethod === 'cash'" x-cloak>
                     <div class="popup-header">
                         <h4 class="text-center">
@@ -637,7 +757,7 @@
                                 <i class="fas fa-user me-1 text-chiiiz"></i> Nama Lengkap
                             </label>
                             <input type="text" x-model="customerName" 
-                                   class="input-modern w-100" 
+                                   class="input-modern" 
                                    placeholder="Masukkan nama lengkap Anda"
                                    @input="validationErrors.name = ''">
                             <div x-show="validationErrors.name" x-text="validationErrors.name" class="validation-error"></div>
@@ -648,21 +768,22 @@
                                 <i class="fab fa-whatsapp me-1 text-chiiiz"></i> Nomor WhatsApp
                             </label>
                             <input type="tel" x-model="customerPhone" 
-                                   class="input-modern w-100" 
+                                   class="input-modern" 
                                    placeholder="Contoh: 081234567890"
                                    @input="validationErrors.phone = ''">
                             <div x-show="validationErrors.phone" x-text="validationErrors.phone" class="validation-error"></div>
                         </div>
 
-                        <button @click="finishOrder()" class="btn-popup-primary w-100 mb-2">
+                        <button @click="finishOrder()" class="btn-popup-primary mb-2">
                             <i class="fas fa-paper-plane me-2"></i> Konfirmasi Pesanan
                         </button>
-                        <button @click="step = 'payment'" class="btn-popup-secondary w-100">
+                        <button @click="step = 'payment'" class="btn-popup-secondary">
                             <i class="fas fa-arrow-left me-2"></i> Kembali ke Pembayaran
                         </button>
                     </div>
                 </div>
 
+                <!-- Step: Data Customer (QRIS) -->
                 <div x-show="step === 'customer' && paymentMethod === 'qris'" x-cloak>
                     <div class="popup-header">
                         <h4 class="text-center">
@@ -675,7 +796,7 @@
                                 <i class="fas fa-user me-1 text-chiiiz"></i> Nama Lengkap
                             </label>
                             <input type="text" x-model="customerName" 
-                                   class="input-modern w-100" 
+                                   class="input-modern" 
                                    placeholder="Masukkan nama lengkap Anda"
                                    @input="validationErrors.name = ''">
                             <div x-show="validationErrors.name" x-text="validationErrors.name" class="validation-error"></div>
@@ -686,21 +807,22 @@
                                 <i class="fab fa-whatsapp me-1 text-chiiiz"></i> Nomor WhatsApp
                             </label>
                             <input type="tel" x-model="customerPhone" 
-                                   class="input-modern w-100" 
+                                   class="input-modern" 
                                    placeholder="Contoh: 081234567890"
                                    @input="validationErrors.phone = ''">
                             <div x-show="validationErrors.phone" x-text="validationErrors.phone" class="validation-error"></div>
                         </div>
 
-                        <button @click="finishOrder()" class="btn-popup-primary w-100 mb-2">
+                        <button @click="finishOrder()" class="btn-popup-primary mb-2">
                             <i class="fas fa-check-circle me-2"></i> Selesaikan Pesanan
                         </button>
-                        <button @click="step = 'qris_display'" class="btn-popup-secondary w-100">
+                        <button @click="step = 'qris_display'" class="btn-popup-secondary">
                             <i class="fas fa-arrow-left me-2"></i> Kembali ke QRIS
                         </button>
                     </div>
                 </div>
 
+                <!-- Step: Sukses -->
                 <div x-show="step === 'success'" x-cloak>
                     <div class="popup-header" style="background: #F2AF17;">
                         <h4 class="text-center text-dark">
@@ -719,7 +841,7 @@
                         <p class="text-muted small mb-4">
                             <i class="fas fa-clock me-1"></i> Silakan tunggu nomor Anda dipanggil oleh kasir
                         </p>
-                        <button @click="reset()" class="btn-popup-primary w-100">
+                        <button @click="reset()" class="btn-popup-primary">
                             <i class="fas fa-shopping-cart me-2"></i> Pesan Lagi
                         </button>
                     </div>
@@ -734,45 +856,56 @@
     <script>
         function kioskApp(dbProducts, dbBestSellerProducts) {
             return {
+                // ===== PRODUCT DETAIL POPUP STATE =====
+                showDetail: false,
+                selectedProduct: null,
+                selectedVarian: null,
+
+                // ===== CHECKOUT POPUP STATE =====
                 step: 'cart', 
                 openModal: false,
                 paymentMethod: '',
                 customerName: '',
                 customerPhone: '',
                 queueNumber: '000',
-                cart: [],
                 validationErrors: {
                     name: '',
                     phone: ''
                 },
                 
+                // ===== DATA =====
+                cart: [],
                 allProducts: [],
                 bestSellerList: [],
                 
                 init() {
                     // Semua produk (All Menu)
-                    this.allProducts = (Array.isArray(dbProducts) ? dbProducts : []).map(p => {
-                        return {
-                            id: p.id, 
-                            name: p.nama_produk || 'Produk Tanpa Nama', 
-                            price: parseFloat(p.harga || 0), 
-                            image: p.gambar,
-                            stok: parseInt(p.stok || 0),
-                            isBestSeller: false
-                        };
-                    });
+                    this.allProducts = (Array.isArray(dbProducts) ? dbProducts : []).map(p => ({
+                        id: p.id,
+                        name: p.nama_produk,
+                        deskripsi: p.deskripsi,
+                        image: p.gambar,
+                        varians: p.varians || [],
+                        price: p.varians && p.varians.length > 0
+                            ? Math.min(...p.varians.map(v => parseFloat(v.harga)))
+                            : 0,
+                        // ✅ Stok = jumlah total stok dari semua varian
+                        stok: p.varians ? p.varians.reduce((sum, v) => sum + parseInt(v.stok || 0), 0) : 0,
+                        isBestSeller: false
+                    }));
                     
-                    // Best Seller Products (dari backend, SAMA LOGIKA DENGAN ADMIN)
-                    this.bestSellerList = (Array.isArray(dbBestSellerProducts) ? dbBestSellerProducts : []).map(p => {
-                        return {
-                            id: p.id,
-                            name: p.nama_produk,
-                            price: parseFloat(p.harga || 0),
-                            image: p.gambar,
-                            stok: parseInt(p.stok || 0),
-                            total_terjual: p.total_terjual || 0
-                        };
-                    });
+                    // Best Seller Products
+                    // Best Seller Products
+                    this.bestSellerList = (Array.isArray(dbBestSellerProducts) ? dbBestSellerProducts : []).map(p => ({
+                        id: p.id,
+                        name: p.nama_produk,
+                        deskripsi: p.deskripsi,
+                        price: parseFloat(p.harga || 0),
+                        image: p.gambar,
+                        stok: p.varians ? p.varians.reduce((sum, v) => sum + parseInt(v.stok || 0), 0) : 0,
+                        total_terjual: p.total_terjual || 0,
+                        varians: p.varians || []   // ✅ hapus duplikat, tambah koma di total_terjual
+                    }));
                     
                     // Update isBestSeller di allProducts
                     const bestSellerIds = this.bestSellerList.map(p => p.id);
@@ -783,40 +916,93 @@
                     
                     // Debug console
                     console.log('========== BEST SELLER ==========');
-                    console.log('Data dari order_items (transaksi sukses)');
                     console.log('Jumlah Best Seller: ' + this.bestSellerList.length);
-                    if (this.bestSellerList.length > 0) {
-                        this.bestSellerList.forEach(p => {
-                            console.log('✅ ' + p.name + ' | Terjual: ' + p.total_terjual + ' pcs');
-                        });
-                    } else {
-                        console.log('Belum ada produk Best Seller');
-                    }
+                    this.bestSellerList.forEach(p => {
+                        console.log('✅ ' + p.name + ' | Terjual: ' + p.total_terjual + ' pcs');
+                    });
                     console.log('=================================');
                 },
                 
+                // ===== COMPUTED =====
                 get cartTotal() { 
                     return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); 
                 },
 
-                addToCart(p) {
-                    let productInState = this.allProducts.find(prod => prod.id === p.id);
-                    let existingInCart = this.cart.find(item => item.id === p.id);
-                    
-                    if (existingInCart) {
-                        if(existingInCart.qty < productInState.stok) existingInCart.qty++;
-                        else alert('Stok tidak mencukupi untuk menambah item!');
+                // ===== PRODUCT DETAIL POPUP =====
+                openDetail(product) {
+                    this.selectedProduct = product;
+
+                    // Set varian pertama sebagai default jika ada varian
+                    if (product.varians && product.varians.length > 0) {
+                        this.selectedVarian = product.varians[0];
                     } else {
-                        if(productInState.stok > 0) this.cart.push({ ...productInState, qty: 1 });
-                        else alert('Maaf, produk ini sedang habis!');
+                        this.selectedVarian = null;
+                    }
+
+                    this.showDetail = true;
+                },
+
+                addToCartFromDetail() {
+                    if (!this.selectedProduct) return;
+
+                    if (this.selectedProduct.varians && this.selectedProduct.varians.length > 0 && !this.selectedVarian) {
+                        alert('Pilih ukuran terlebih dahulu!');
+                        return;
+                    }
+
+                    const price = this.selectedVarian
+                        ? parseFloat(this.selectedVarian.harga)
+                        : this.selectedProduct.price;
+
+                    // ✅ Cek stok dari varian yang dipilih, bukan dari allProducts
+                    const stokTersedia = this.selectedVarian
+                        ? parseInt(this.selectedVarian.stok || 0)
+                        : parseInt(this.selectedProduct.stok || 0);
+
+                    const varianLabel = this.selectedVarian ? this.selectedVarian.ukuran : '';
+                    const cartKey = this.selectedProduct.id + '_' + (this.selectedVarian ? this.selectedVarian.id : 'default');
+
+                    const existingItem = this.cart.find(item => item.cartKey === cartKey);
+                    const qtyDiKeranjang = existingItem ? existingItem.qty : 0;
+
+                    // ✅ Bandingkan qty keranjang + 1 dengan stok varian langsung
+                    if (qtyDiKeranjang + 1 > stokTersedia) {
+                        alert('Stok tidak mencukupi!');
+                        return;
+                    }
+
+                    if (existingItem) {
+                        existingItem.qty++;
+                    } else {
+                        this.cart.push({
+                            cartKey: cartKey,
+                            id: this.selectedProduct.id,
+                            name: this.selectedProduct.name,
+                            image: this.selectedProduct.image,
+                            price: price,
+                            varianId: this.selectedVarian ? this.selectedVarian.id : null,
+                            varianLabel: varianLabel,
+                            qty: 1
+                        });
+                    }
+
+                    this.showDetail = false;
+                },
+
+                // ===== CART OPERATIONS =====
+                removeFromCart(index) {
+                    if (this.cart[index].qty > 1) {
+                        this.cart[index].qty--;
+                    } else {
+                        this.cart.splice(index, 1);
                     }
                 },
 
-                removeFromCart(index) {
-                    if (this.cart[index].qty > 1) this.cart[index].qty--;
-                    else this.cart.splice(index, 1);
+                increaseQty(index) {
+                    this.cart[index].qty++;
                 },
 
+                // ===== CHECKOUT FLOW =====
                 selectPayment(method) {
                     this.paymentMethod = method;
                     if (method === 'qris') {
@@ -853,19 +1039,24 @@
                 },
 
                 async finishOrder() {
-                    if(!this.validateCustomerData()) return;
+                    if (!this.validateCustomerData()) return;
                     
                     try {
                         const response = await fetch("{{ route('checkout') }}", {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                            headers: { 
+                                'Content-Type': 'application/json', 
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}' 
+                            },
                             body: JSON.stringify({
                                 total: this.cartTotal, 
                                 items: this.cart.map(item => ({
                                     id: item.id,
                                     name: item.name,
                                     price: item.price,
-                                    qty: item.qty
+                                    qty: item.qty,
+                                    varian_id: item.varianId,
+                                    varian_label: item.varianLabel
                                 })),
                                 name: this.customerName, 
                                 phone: this.customerPhone, 
@@ -874,12 +1065,13 @@
                         });
                         
                         const result = await response.json();
-                        if(result.success) {
+
+                        if (result.success) {
                             this.queueNumber = result.queue_number.toString().padStart(3, '0');
                             this.cart = []; 
                             this.step = 'success';
                             
-                            // Reload halaman setelah 2 detik agar best seller terupdate
+                            // Reload halaman setelah 18 menit agar best seller terupdate
                             setTimeout(() => {
                                 location.reload();
                             }, 1080000);
@@ -893,7 +1085,9 @@
                     }
                 },
 
-                reset() { location.reload(); }
+                reset() { 
+                    location.reload(); 
+                }
             }
         }
     </script>

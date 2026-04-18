@@ -13,11 +13,14 @@ return new class extends Migration
     {
         Schema::create('stok_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('produk_id')->constrained('produks')->onDelete('cascade');
+            $table->foreignId('produk_varian_id')
+                ->constrained('produk_varians')
+                ->cascadeOnDelete();
+
             $table->integer('jumlah_masuk');
             $table->integer('stok_sebelumnya');
             $table->integer('stok_sesudahnya');
-            $table->string('keterangan')->nullable(); // Misal: "Pemasukan barang vendor A"
+            $table->string('keterangan')->nullable();
             $table->timestamps();
         });
     }

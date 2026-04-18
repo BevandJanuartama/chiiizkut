@@ -3,32 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\Produk;
+use App\Models\ProdukVarian;
 use App\Models\StokLog;
 use App\Models\Transaksi;
 use App\Models\DetailTransaksi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
-use App\Events\StokUpdated;
 use Carbon\Carbon;
 
 class ProdukController extends Controller
 {
     public function dashboard()
     {
-        // Statistik Ringkas (Top Cards)
         $pendapatanHariIni = Transaksi::where('status', 'sukses')
             ->whereDate('created_at', Carbon::today())
             ->sum('total');
 
         $totalPesananHariIni = Transaksi::whereDate('created_at', Carbon::today())->count();
-        $stokMenipis = Produk::where('stok', '<', 10)->count();
-        $totalProduk = Produk::count();
 
-        // ---> INI TAMBAHAN BARUNYA: Mengambil data jumlah pesanan yang statusnya 'pending'
+        // 🔥 HITUNG DARI VARIAN
+        $stokMenipis = ProdukVarian::where('stok', '<', 10)->count();
+
+        $totalProduk = Produk::count();
         $pesananPending = Transaksi::where('status', 'pending')->count();
 
-        // Data Grafik Penjualan 7 Hari Terakhir
         $weeklySales = Transaksi::where('status', 'sukses')
             ->where('created_at', '>=', Carbon::now()->subDays(6))
             ->select(
@@ -39,7 +38,6 @@ class ProdukController extends Controller
             ->orderBy('date', 'ASC')
             ->get();
 
-        // Data Produk Terlaris (Top 5)
         $topProducts = DetailTransaksi::select('produks.nama_produk', DB::raw('SUM(qty) as total_qty'))
             ->join('produks', 'produks.id', '=', 'detail_transaksis.produk_id')
             ->join('transaksis', 'transaksis.id', '=', 'detail_transaksis.transaksi_id')
@@ -56,98 +54,98 @@ class ProdukController extends Controller
             'totalProduk',
             'weeklySales',
             'topProducts',
-            'pesananPending' 
+            'pesananPending'
         ));
     }
 
-
-    // 1. Menampilkan Daftar Produk
     public function index()
     {
-        $produks = Produk::all();
-        // Pastikan folder view sesuai: resources/views/admin/produk/index.blade.php
+        $produks = Produk::with('varians')->get();
         return view('admin.produk.index', compact('produks'));
     }
 
-    // 2. Menampilkan Form Tambah Produk (PENTING: Tadi ini yang hilang)
     public function create()
     {
         return view('admin.produk.create');
     }
 
-    // 3. Menyimpan Produk Baru
     public function store(Request $request)
     {
-        // 1. Hapus 'stok' dari validasi karena tidak ada di form
         $request->validate([
             'nama_produk' => 'required|string|max:255',
             'deskripsi'   => 'required',
-            'ukuran'      => 'required',
-            'harga'       => 'required|numeric',
+            'harga_small' => 'required|numeric',
+            'harga_large' => 'required|numeric',
             'gambar'      => 'required|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // 2. Ubah string ke array untuk ukuran
-        $ukuranArray = explode(',', $request->ukuran);
-        $ukuranClean = array_map('trim', $ukuranArray);
-
-        // 3. Handle upload gambar
         $path = $request->file('gambar')->store('produk_images', 'public');
 
-        // 4. Simpan ke database
-        Produk::create([
+        $produk = Produk::create([
             'nama_produk' => $request->nama_produk,
             'deskripsi'   => $request->deskripsi,
-            'ukuran'      => $ukuranClean,
-            'harga'       => $request->harga,
-            'stok'        => 0, // Set otomatis 0 di sini
             'gambar'      => $path,
         ]);
 
-        return redirect()->route('produks.index')->with('success', 'Produk berhasil ditambahkan dengan stok awal 0!');
+        // AUTO VARIAN + STOK 0
+        ProdukVarian::create([
+            'produk_id' => $produk->id,
+            'ukuran'    => 'small',
+            'harga'     => $request->harga_small,
+            'stok'      => 0,
+        ]);
+
+        ProdukVarian::create([
+            'produk_id' => $produk->id,
+            'ukuran'    => 'large',
+            'harga'     => $request->harga_large,
+            'stok'      => 0,
+        ]);
+
+        return redirect()->route('produks.index')->with('success', 'Produk berhasil ditambahkan!');
     }
 
-    // 4. Menampilkan Form Edit (PENTING: Tadi ini juga belum ada)
     public function edit(Produk $produk)
     {
+        $produk->load('varians');
         return view('admin.produk.edit', compact('produk'));
     }
 
-    // 5. Memperbarui Data Produk
     public function update(Request $request, Produk $produk)
     {
         $request->validate([
             'nama_produk' => 'required|string|max:255',
             'deskripsi'   => 'required',
-            'ukuran'      => 'required',
-            'harga'       => 'required|numeric',
-            'stok'        => 'required|integer',
+            'harga_small' => 'required|numeric',
+            'harga_large' => 'required|numeric',
             'gambar'      => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        // UBAH STRING KE ARRAY
-        $ukuranArray = explode(',', $request->ukuran);
-        $ukuranClean = array_map('trim', $ukuranArray);
-
         if ($request->hasFile('gambar')) {
             Storage::disk('public')->delete($produk->gambar);
-            $path = $request->file('gambar')->store('produk_images', 'public');
-            $produk->gambar = $path;
+            $produk->gambar = $request->file('gambar')->store('produk_images', 'public');
         }
 
         $produk->update([
             'nama_produk' => $request->nama_produk,
             'deskripsi'   => $request->deskripsi,
-            'ukuran'      => $ukuranClean, // Update sebagai array
-            'harga'       => $request->harga,
-            'stok'        => $request->stok,
             'gambar'      => $produk->gambar,
         ]);
+
+        // UPDATE VARIAN
+        $produk->varians()->updateOrCreate(
+            ['ukuran' => 'small'],
+            ['harga' => $request->harga_small]
+        );
+
+        $produk->varians()->updateOrCreate(
+            ['ukuran' => 'large'],
+            ['harga' => $request->harga_large]
+        );
 
         return redirect()->route('produks.index')->with('success', 'Produk berhasil diperbarui!');
     }
 
-    // 6. Menghapus Produk
     public function destroy(Produk $produk)
     {
         if ($produk->gambar) {
@@ -158,55 +156,48 @@ class ProdukController extends Controller
         return redirect()->route('produks.index')->with('success', 'Produk berhasil dihapus!');
     }
 
+    // 🔥 FIX: LOAD VARIAN
     public function editStok()
     {
-        $produks = Produk::all();
-        // Sesuaikan path view dengan struktur folder admin kamu
+        $produks = Produk::with('varians')->get();
         return view('admin.produk.stok', compact('produks'));
     }
 
+    // 🔥 FIX TOTAL
     public function updateStok(Request $request)
     {
         $request->validate([
-            'produk_id' => 'required|exists:produks,id',
+            'produk_varian_id' => 'required|exists:produk_varians,id',
             'jumlah_stok' => 'required|integer|min:1',
             'keterangan' => 'nullable|string'
         ]);
 
-        try {
-            return DB::transaction(function () use ($request) {
-                $produk = \App\Models\Produk::findOrFail($request->produk_id);
-                $stokAwal = $produk->stok;
-                $stokBaru = $stokAwal + $request->jumlah_stok;
+        return DB::transaction(function () use ($request) {
 
-                // 1. Update stok di database
-                $produk->update(['stok' => $stokBaru]);
+            $varian = ProdukVarian::findOrFail($request->produk_varian_id);
 
-                // 2. Catat log stok
-                \App\Models\StokLog::create([
-                    'produk_id' => $produk->id,
-                    'jumlah_masuk' => $request->jumlah_stok,
-                    'stok_sebelumnya' => $stokAwal,
-                    'stok_sesudahnya' => $stokBaru,
-                    'keterangan' => $request->keterangan ?? 'Stok Masuk Baru',
-                ]);
+            $stokAwal = $varian->stok;
+            $stokBaru = $stokAwal + $request->jumlah_stok;
 
-                // 3. BROADCAST: Update ke semua layar user/pembeli
-                broadcast(new \App\Events\StokUpdated($produk->id, $stokBaru))->toOthers();
+            $varian->update([
+                'stok' => $stokBaru
+            ]);
 
-                return redirect()->route('stok.logs')->with('success', "Stok {$produk->nama_produk} berhasil ditambah!");
-            });
-        } catch (\Exception $e) {
-            return back()->with('error', 'Gagal update stok: ' . $e->getMessage());
-        }
+            StokLog::create([
+                'produk_varian_id' => $varian->id,
+                'jumlah_masuk' => $request->jumlah_stok,
+                'stok_sebelumnya' => $stokAwal,
+                'stok_sesudahnya' => $stokBaru,
+                'keterangan' => $request->keterangan
+            ]);
+
+            return redirect()->route('stok.logs')->with('success', 'Stok berhasil ditambah!');
+        });
     }
 
     public function stokLogs()
     {
-        // Mengambil data log beserta relasi produknya, diurutkan dari yang terbaru
-        $logs = StokLog::with('produk')->latest()->get();
-
-        // Mengarahkan ke file blade yang tadi kita buat
+        $logs = StokLog::with('produkVarian.produk')->latest()->get();
         return view('admin.produk.stok_logs', compact('logs'));
     }
 }

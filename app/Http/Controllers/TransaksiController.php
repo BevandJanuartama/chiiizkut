@@ -10,6 +10,7 @@ use App\Models\DetailTransaksi;
 use App\Models\Produk;
 use App\Events\StokUpdated;
 use App\Events\PesananBaru;
+use App\Models\ProdukVarian;
 
 class TransaksiController extends Controller
 {
@@ -33,7 +34,14 @@ class TransaksiController extends Controller
         // ===============================
         if ($request->status == 'gagal' && $transaksi->status != 'gagal') {
             foreach ($transaksi->details as $detail) {
-                $detail->produk->increment('stok', $detail->qty);
+                // Cari varian berdasarkan produk_id dan harga_satuan (karena tidak ada varian_id di detail)
+                $varian = ProdukVarian::where('produk_id', $detail->produk_id)
+                            ->where('harga', $detail->harga_satuan)
+                            ->first();
+                
+                if ($varian) {
+                    $varian->increment('stok', $detail->qty);
+                }
             }
         }
 
@@ -124,21 +132,29 @@ class TransaksiController extends Controller
                 foreach ($request->items as $item) {
                     $produk = Produk::findOrFail($item['id']);
 
-                    if ($produk->stok < $item['qty']) {
-                        throw new \Exception("Stok {$produk->nama_produk} tidak cukup!");
+                    // ✅ Ambil varian yang dipilih customer
+                    $varian = ProdukVarian::where('produk_id', $item['id'])
+                                ->where('id', $item['varian_id'])
+                                ->firstOrFail();
+
+                    // ✅ Cek stok dari varian
+                    if ($varian->stok < $item['qty']) {
+                        throw new \Exception("Stok {$produk->nama_produk} ({$varian->ukuran}) tidak cukup!");
                     }
 
                     DetailTransaksi::create([
-                        'transaksi_id' => $transaksi->id,
-                        'produk_id'    => $item['id'],
-                        'qty'          => $item['qty'],
-                        'harga_satuan' => $item['price'],
-                        'subtotal'     => $item['price'] * $item['qty'],
+                        'transaksi_id'     => $transaksi->id,
+                        'produk_id'        => $item['id'],
+                        'produk_varian_id' => $item['varian_id'],
+                        'qty'              => $item['qty'],
+                        'harga_satuan'     => $item['price'],
+                        'subtotal'         => $item['price'] * $item['qty'],
                     ]);
 
-                    $produk->decrement('stok', $item['qty']);
+                    // ✅ Kurangi stok dari varian
+                    $varian->decrement('stok', $item['qty']);
 
-                    broadcast(new StokUpdated($produk->id, $produk->stok));
+                    broadcast(new StokUpdated($produk->id, $varian->stok));
                 }
 
                 return [

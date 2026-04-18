@@ -9,24 +9,17 @@ class Produk extends Model
 {
     use HasFactory;
 
-    // Explicitly define the table name because it's not the English plural 'products'
-    protected $table = 'produks';
-
-    // Columns that can be filled via the request
     protected $fillable = [
         'nama_produk',
         'deskripsi',
-        'ukuran',
-        'harga',
         'gambar',
-        'stok',
     ];
 
     /**
-     * If you chose to store 'ukuran' as a JSON array, 
-     * use this cast to automatically convert it.
+     * Relasi ke varian (1 produk punya banyak varian)
      */
-    protected $casts = [
-        'ukuran' => 'array',
-    ];
+    public function varians()
+    {
+        return $this->hasMany(ProdukVarian::class);
+    }
 }

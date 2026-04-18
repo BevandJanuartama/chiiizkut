@@ -15,13 +15,18 @@
 
             <div>
                 <label class="block text-sm font-black uppercase mb-1 tracking-wider">Pilih Produk</label>
-                <select name="produk_id" class="mt-1 block w-full rounded-xl border-4 border-black p-3 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0 focus:border-chiiiz" required>
-                    <option value="" disabled selected>-- Pilih Barang --</option>
+                <select name="produk_varian_id" required class="mt-1 block w-full rounded-xl border-4 border-black p-3 font-bold">
+                    <option disabled selected>-- Pilih Barang --</option>
+
                     @foreach($produks as $produk)
-                        <option value="{{ $produk->id }}">
-                            {{ $produk->nama_produk }} (Stok saat ini: {{ $produk->stok }})
-                        </option>
+                        @foreach($produk->varians as $varian)
+                            <option value="{{ $varian->id }}">
+                                {{ $produk->nama_produk }} - {{ strtoupper($varian->ukuran) }} 
+                                (Stok: {{ $varian->stok }})
+                            </option>
+                        @endforeach
                     @endforeach
+
                 </select>
             </div>
 

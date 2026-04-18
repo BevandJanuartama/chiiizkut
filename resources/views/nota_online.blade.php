@@ -34,7 +34,10 @@
                 <p class="font-bold mb-3">Rincian Pesanan:</p>
                 @foreach($transaksi->details as $detail)
                 <div class="flex justify-between mb-2">
-                    <span class="text-sm text-gray-600">{{ $detail->qty }}x {{ $detail->produk->nama_produk }}</span>
+                    <span class="text-sm text-gray-600">
+                        {{ $detail->qty }}x {{ $detail->varian->produk->nama_produk }}
+                        <span class="text-xs text-gray-400 uppercase">({{ $detail->varian->ukuran }})</span>
+                    </span>
                     <span class="text-sm font-semibold">Rp {{ number_format($detail->subtotal) }}</span>
                 </div>
                 @endforeach

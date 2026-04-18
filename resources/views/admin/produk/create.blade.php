@@ -25,6 +25,7 @@
 
                     <form action="{{ route('produks.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                         @csrf
+
                         <div>
                             <label class="block text-sm font-black uppercase text-gray-700">Nama Produk</label>
                             <input type="text" name="nama_produk" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0 focus:border-chiiiz" placeholder="Contoh: Chiiiz Cake Berry" required>
@@ -35,14 +36,15 @@
                             <textarea name="deskripsi" rows="3" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0 focus:border-chiiiz" placeholder="Tuliskan spesifikasi produk..."></textarea>
                         </div>
 
+                        {{-- ✅ UI tetap 2 kolom, tapi isi diubah --}}
                         <div class="grid grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-black uppercase text-gray-700">Harga (Rupiah)</label>
-                                <input type="number" name="harga" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0" placeholder="150000" required>
+                                <label class="block text-sm font-black uppercase text-gray-700">Harga Small (Rupiah)</label>
+                                <input type="number" name="harga_small" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0" placeholder="100000" required>
                             </div>
                             <div>
-                                <label class="block text-sm font-black uppercase text-gray-700">Ukuran</label>
-                                <input type="text" name="ukuran" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" placeholder="S, M, L" required>
+                                <label class="block text-sm font-black uppercase text-gray-700">Harga Large (Rupiah)</label>
+                                <input type="number" name="harga_large" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0" placeholder="150000" required>
                             </div>
                         </div>
 
