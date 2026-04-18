@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('transaksis', function (Blueprint $table) {
             $table->id();
+            $table->string('kode_unik')->unique();
             $table->string('nama')->nullable();
             $table->string('telepon')->nullable();
             $table->decimal('total', 15, 2); // Naikkan ke 15 digit agar lebih lega untuk Rupiah

@@ -41,6 +41,8 @@ Route::get('/', function () {
 
 Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checkout');
 
+Route::get('/nota/{kode_unik}', [TransaksiController::class, 'showNota'])->name('nota.show');
+
 
 // --- 2. Authenticated Routes ---
 Route::middleware('auth')->group(function () {
