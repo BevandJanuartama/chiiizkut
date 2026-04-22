@@ -1,89 +1,205 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Produk - ChiiiZkut.</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .bg-chiiiz { background-color: #F2AF17; }
-        .card-neo { background: white; border: 3px solid black; border-radius: 1.5rem; box-shadow: 8px 8px 0px 0px rgba(0,0,0,1); }
-    </style>
-</head>
-<body class="bg-gray-100 text-black">
-    <div class="flex min-h-screen">
-        @include('layouts.sidebar')
+@extends('layouts.admin')
+@section('title', 'Edit Produk')
 
-        <main class="flex-1 p-8 md:p-12">
-            <div class="max-w-3xl mx-auto">
-                <div class="card-neo p-8 bg-white">
-                    <h1 class="text-3xl font-black mb-2">Edit <span class="text-yellow-400 italic">Produk</span></h1>
-                    <p class="text-gray-500 mb-8 border-b-2 border-black pb-4 font-medium">
-                        Produk: <span class="text-black font-bold">{{ $produk->nama_produk }}</span>
+@section('content')
+
+<style>
+    .text-brown-dark { color: #8b4513; }
+    .text-chiiiz { color: #f4b236; }
+
+    .bg-yellow-custom { 
+        background-color: #f4b236; 
+        color: white; 
+        border: none; 
+        transition: 0.2s;
+    }
+    .bg-yellow-custom:hover { 
+        background-color: #e09d2a; 
+        transform: translateY(-1px);
+    }
+
+    .card-neo-soft {
+        background: #ffffff;
+        border-radius: 1.2rem;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+    }
+
+    .form-label-custom {
+        color: #8b4513;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.6rem;
+    }
+
+    .custom-input {
+        background-color: #fdfcfb;
+        border: 1.5px solid #eaddcf;
+        border-radius: 0.8rem;
+        padding: 0.9rem 1.2rem;
+        font-size: 0.95rem;
+    }
+
+    .custom-input:focus {
+        border-color: #f4b236;
+        box-shadow: 0 0 0 0.25rem rgba(244,178,54,0.15);
+    }
+
+    .upload-box {
+        border: 2px dashed #eaddcf;
+        border-radius: 1rem;
+        min-height: 220px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        background: #fdfcfb;
+        cursor: pointer;
+    }
+
+    #preview {
+        max-height: 200px;
+        border-radius: 10px;
+    }
+</style>
+
+<div class="container-fluid py-4 px-md-4">
+
+    <!-- HEADER -->
+    <div class="mb-5">
+        <a href="{{ route('produks.index') }}" class="text-decoration-none text-secondary small mb-3 d-inline-flex align-items-center fw-medium">
+            <i class="bi bi-arrow-left me-2"></i> Kembali ke Katalog
+        </a>
+
+        <h2 class="fw-bold text-brown-dark mb-1" style="font-size: 2.2rem;">
+            Edit <span class="text-chiiiz">Produk</span>
+        </h2>
+
+        <p class="text-secondary fw-medium">
+            Sedang mengubah: <strong>{{ $produk->nama_produk }}</strong>
+        </p>
+    </div>
+
+    <!-- CARD -->
+    <div class="card card-neo-soft p-4 p-md-5 mx-auto" style="max-width: 900px;">
+        
+        <form action="{{ route('produks.update', $produk->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+
+            <div class="row g-4">
+
+                <!-- KIRI -->
+                <div class="col-md-7">
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">NAMA KUE</label>
+                        <input type="text" name="nama_produk" value="{{ old('nama_produk', $produk->nama_produk) }}" class="form-control custom-input" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">DESKRIPSI</label>
+                        <textarea name="deskripsi" rows="3" class="form-control custom-input" required>{{ old('deskripsi', $produk->deskripsi) }}</textarea>
+                    </div>
+
+                    <div class="row g-3">
+                        @php
+                            $hSmall = $produk->varians->where('ukuran','small')->first()?->harga;
+                            $hLarge = $produk->varians->where('ukuran','large')->first()?->harga;
+                        @endphp
+
+                        <div class="col-md-6">
+                            <label class="form-label-custom">HARGA SMALL</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0" style="border-color:#eaddcf;">Rp</span>
+                                <input type="text" id="small_display" class="form-control custom-input border-start-0">
+                                <input type="hidden" name="harga_small" id="small" value="{{ old('harga_small', $hSmall) }}">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-custom">HARGA LARGE</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0" style="border-color:#eaddcf;">Rp</span>
+                                <input type="text" id="large_display" class="form-control custom-input border-start-0">
+                                <input type="hidden" name="harga_large" id="large" value="{{ old('harga_large', $hLarge) }}">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- KANAN -->
+                <div class="col-md-5">
+                    <label class="form-label-custom">VISUAL PRODUK</label>
+
+                    <div class="upload-box" onclick="document.getElementById('gambar').click()">
+                        
+                        <img id="preview" src="{{ asset('storage/' . $produk->gambar) }}">
+                        
+                        <input type="file" name="gambar" id="gambar" hidden onchange="previewImage(event)">
+                    </div>
+
+                    <small class="text-muted d-block mt-2 text-center">
+                        Klik gambar untuk mengganti foto
+                    </small>
+                </div>
+
+            </div>
+
+            <!-- ALERT -->
+            <div class="alert bg-light border mt-4" style="border-color: #eaddcf; border-radius: 0.8rem;">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-info-circle-fill text-warning fs-4"></i>
+                    <p class="mb-0 text-secondary small fw-medium">
+                        Pastikan data produk sudah benar sebelum disimpan.
                     </p>
-
-                    <form action="{{ route('produks.update', $produk->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                        @csrf
-                        @method('PUT')
-
-                        <div>
-                            <label class="block text-sm font-black uppercase text-gray-700">Nama Produk</label>
-                            <input type="text" name="nama_produk" value="{{ $produk->nama_produk }}"
-                                class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0 focus:border-yellow-400"
-                                placeholder="Contoh: Chiiiz Cake Berry" required>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-black uppercase text-gray-700">Deskripsi Produk</label>
-                            <textarea name="deskripsi" rows="3"
-                                class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0 focus:border-yellow-400"
-                                placeholder="Tuliskan spesifikasi produk...">{{ $produk->deskripsi }}</textarea>
-                        </div>
-
-                        {{-- Harga Small & Large dari varians --}}
-                        <div class="grid grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-black uppercase text-gray-700">Harga Small (Rupiah)</label>
-                                <input type="number" name="harga_small"
-                                    value="{{ $produk->varians->where('ukuran', 'small')->first()?->harga }}"
-                                    class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0"
-                                    placeholder="100000" required>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-black uppercase text-gray-700">Harga Large (Rupiah)</label>
-                                <input type="number" name="harga_large"
-                                    value="{{ $produk->varians->where('ukuran', 'large')->first()?->harga }}"
-                                    class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0"
-                                    placeholder="150000" required>
-                            </div>
-                        </div>
-
-                        {{-- Foto --}}
-                        <div class="bg-gray-50 p-6 rounded-2xl border-2 border-black border-dashed">
-                            <label class="block text-sm font-black uppercase text-gray-700 mb-4 text-center">Foto Saat Ini</label>
-                            <div class="flex justify-center mb-4">
-                                <img src="{{ asset('storage/' . $produk->gambar) }}"
-                                    class="w-32 h-32 object-cover rounded-xl border-4 border-black shadow-md">
-                            </div>
-                            <label class="block text-sm font-black uppercase text-gray-700 mb-2">Ganti Foto (Opsional)</label>
-                            <input type="file" name="gambar"
-                                class="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-2 file:border-black file:font-black file:bg-chiiiz file:text-black">
-                        </div>
-
-                        <div class="flex items-center justify-end space-x-4 pt-6 border-t-2 border-black">
-                            <a href="{{ route('produks.index') }}" class="font-bold text-gray-500">Batal</a>
-                            <button type="submit"
-                                class="bg-black text-white px-8 py-3 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(242,175,23,1)] hover:shadow-none transition-all">
-                                UPDATE PRODUK
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
-        </main>
+
+            <hr class="border-secondary-subtle mb-4" style="opacity: 0.5;">
+
+            <!-- BUTTON -->
+            <div class="d-flex justify-content-end align-items-center gap-4">
+                <a href="{{ route('produks.index') }}" class="text-dark text-decoration-none fw-bold small">
+                    Batalkan
+                </a>
+
+                <button type="submit" class="btn bg-yellow-custom fw-bold px-4 py-3" style="border-radius: 0.8rem;">
+                    <i class="bi bi-check-circle me-1"></i> Simpan Perubahan
+                </button>
+            </div>
+
+        </form>
     </div>
-</body>
-</html>
+</div>
+
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('preview');
+
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+    }
+}
+
+// format rupiah
+function rupiah(display, hidden) {
+    if(hidden.value){
+        display.value = new Intl.NumberFormat('id-ID').format(hidden.value);
+    }
+
+    display.addEventListener('input', function(e) {
+        let val = e.target.value.replace(/[^0-9]/g, '');
+        hidden.value = val;
+        e.target.value = val ? new Intl.NumberFormat('id-ID').format(val) : '';
+    });
+}
+
+rupiah(document.getElementById('small_display'), document.getElementById('small'));
+rupiah(document.getElementById('large_display'), document.getElementById('large'));
+</script>
+
+@endsection

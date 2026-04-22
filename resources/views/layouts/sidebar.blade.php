@@ -1,4 +1,4 @@
-<style>
+{{-- <style>
     /* CSS Khusus Sidebar Artisanal */
     .sidebar-artisanal {
         width: 280px;
@@ -105,4 +105,4 @@
             </button>
         </form>
     </div>
-</aside>
+</aside> --}}

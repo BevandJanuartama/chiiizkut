@@ -1,66 +1,206 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Produk - ChiiiZkut.</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .bg-chiiiz { background-color: #F2AF17; }
-        .card-neo { background: white; border: 3px solid black; border-radius: 1.5rem; box-shadow: 8px 8px 0px 0px rgba(0,0,0,1); }
-    </style>
-</head>
-<body class="bg-gray-100 text-black">
-    <div class="flex min-h-screen">
-        @include('layouts.sidebar')
+@extends('layouts.admin')
+@section('title', 'Tambah Produk')
 
-        <main class="flex-1 p-8 md:p-12">
-            <div class="max-w-3xl mx-auto">
-                <div class="card-neo p-8 bg-white">
-                    <h1 class="text-3xl font-black mb-2">Input <span class="text-chiiiz italic">Produk Baru</span></h1>
-                    <p class="text-gray-500 mb-8 border-b-2 border-black pb-4 font-medium">Isi formulir untuk menambahkan menu cake baru.</p>
+@section('content')
 
-                    <form action="{{ route('produks.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                        @csrf
+<style>
+    .text-brown-dark { color: #8b4513; }
+    .text-chiiiz { color: #f4b236; }
 
-                        <div>
-                            <label class="block text-sm font-black uppercase text-gray-700">Nama Produk</label>
-                            <input type="text" name="nama_produk" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0 focus:border-chiiiz" placeholder="Contoh: Chiiiz Cake Berry" required>
-                        </div>
+    .bg-yellow-custom { 
+        background-color: #f4b236; 
+        color: white; 
+        border: none; 
+        transition: all 0.2s ease-in-out;
+    }
+    .bg-yellow-custom:hover { 
+        background-color: #e09d2a; 
+        color: white; 
+        transform: translateY(-1px);
+    }
 
-                        <div>
-                            <label class="block text-sm font-black uppercase text-gray-700">Deskripsi Produk</label>
-                            <textarea name="deskripsi" rows="3" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0 focus:border-chiiiz" placeholder="Tuliskan spesifikasi produk..."></textarea>
-                        </div>
+    .card-neo-soft {
+        background: #ffffff;
+        border: none;
+        border-radius: 1.2rem;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+    }
 
-                        {{-- ✅ UI tetap 2 kolom, tapi isi diubah --}}
-                        <div class="grid grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-black uppercase text-gray-700">Harga Small (Rupiah)</label>
-                                <input type="number" name="harga_small" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0" placeholder="100000" required>
+    .form-label-custom {
+        color: #8b4513;
+        font-size: 0.8rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.6rem;
+    }
+
+    .custom-input {
+        background-color: #fdfcfb;
+        border: 1.5px solid #eaddcf;
+        border-radius: 0.8rem;
+        padding: 0.9rem 1.2rem;
+        font-size: 0.95rem;
+    }
+
+    .custom-input:focus {
+        border-color: #f4b236;
+        box-shadow: 0 0 0 0.25rem rgba(244, 178, 54, 0.15);
+    }
+
+    .upload-box {
+        border: 2px dashed #eaddcf;
+        border-radius: 1rem;
+        min-height: 220px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        background: #fdfcfb;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .upload-box:hover {
+        border-color: #f4b236;
+    }
+
+    #preview {
+        max-height: 200px;
+        display: none;
+        border-radius: 10px;
+    }
+</style>
+
+<div class="container-fluid py-4 px-md-4">
+
+    <!-- HEADER -->
+    <div class="mb-5">
+        <a href="{{ route('produks.index') }}" class="text-decoration-none text-secondary small mb-3 d-inline-flex align-items-center fw-medium">
+            <i class="bi bi-arrow-left me-2"></i> Kembali ke Katalog
+        </a>
+
+        <h2 class="fw-bold text-brown-dark mb-1" style="font-size: 2.2rem;">
+            Input <span class="text-chiiiz">Produk Baru</span>
+        </h2>
+
+        <p class="text-secondary fw-medium">
+            Tambahkan kue terbaru ke dalam koleksi ChiiiZkut.
+        </p>
+    </div>
+
+    <!-- CARD -->
+    <div class="card card-neo-soft p-4 p-md-5 mx-auto" style="max-width: 900px;">
+        
+        <form action="{{ route('produks.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+
+            <div class="row g-4">
+
+                <!-- KIRI -->
+                <div class="col-md-7">
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">NAMA KUE</label>
+                        <input type="text" name="nama_produk" class="form-control custom-input" placeholder="Tuliskan nama produk..." required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label-custom">DESKRIPSI</label>
+                        <textarea name="deskripsi" rows="3" class="form-control custom-input" placeholder="Berikan deskripsi singkat." required></textarea>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label-custom">HARGA SMALL</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0" style="border-color:#eaddcf;">Rp</span>
+                                <input type="text" id="small_display" class="form-control custom-input border-start-0">
+                                <input type="hidden" name="harga_small" id="small">
                             </div>
-                            <div>
-                                <label class="block text-sm font-black uppercase text-gray-700">Harga Large (Rupiah)</label>
-                                <input type="number" name="harga_large" class="mt-1 block w-full rounded-xl border-2 border-black p-3 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] focus:ring-0" placeholder="150000" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label-custom">HARGA LARGE</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-transparent border-end-0" style="border-color:#eaddcf;">Rp</span>
+                                <input type="text" id="large_display" class="form-control custom-input border-start-0">
+                                <input type="hidden" name="harga_large" id="large">
                             </div>
                         </div>
+                    </div>
 
-                        <div>
-                            <label class="block text-sm font-black uppercase text-gray-700">Foto Produk</label>
-                            <input type="file" name="gambar" class="mt-2 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-2 file:border-black file:font-black file:bg-chiiiz file:text-black" required>
+                </div>
+
+                <!-- KANAN -->
+                <div class="col-md-5">
+                    <label class="form-label-custom">VISUAL PRODUK</label>
+
+                    <div class="upload-box" onclick="document.getElementById('gambar').click()">
+                        <div id="placeholder" class="text-center">
+                            <i class="bi bi-camera fs-2 text-secondary"></i>
+                            <p class="fw-bold text-secondary mb-1">Unggah Foto</p>
+                            <small class="text-muted">Max 2MB</small>
                         </div>
 
-                        <div class="flex items-center justify-end space-x-4 pt-6 border-t-2 border-black">
-                            <a href="{{ route('produks.index') }}" class="font-bold text-gray-500">Batal</a>
-                            <button type="submit" class="bg-black text-white px-8 py-3 rounded-xl font-black shadow-[4px_4px_0px_0px_rgba(242,175,23,1)] hover:shadow-none transition-all">SIMPAN PRODUK</button>
-                        </div>
-                    </form>
+                        <img id="preview">
+                        <input type="file" name="gambar" id="gambar" hidden onchange="previewImage(event)">
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ALERT -->
+            <div class="alert bg-light border mt-4" style="border-color: #eaddcf; border-radius: 0.8rem;">
+                <div class="d-flex align-items-center gap-3">
+                    <i class="bi bi-info-circle-fill text-warning fs-4"></i>
+                    <p class="mb-0 text-secondary small fw-medium">
+                        Pastikan data produk yang dimasukkan sudah benar.
+                    </p>
                 </div>
             </div>
-        </main>
+
+            <hr class="border-secondary-subtle mb-4" style="opacity: 0.5;">
+
+            <!-- BUTTON -->
+            <div class="d-flex justify-content-end align-items-center gap-4">
+                <a href="{{ route('produks.index') }}" class="text-dark text-decoration-none fw-bold small">
+                    Batalkan
+                </a>
+
+                <button type="submit" class="btn bg-yellow-custom fw-bold px-4 py-3" style="border-radius: 0.8rem;">
+                    <i class="bi bi-plus-circle me-1"></i> Tambah Produk
+                </button>
+            </div>
+
+        </form>
     </div>
-</body>
-</html>
+</div>
+
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('preview');
+    const placeholder = document.getElementById('placeholder');
+
+    if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        placeholder.style.display = 'none';
+    }
+}
+
+// format rupiah
+function rupiah(display, hidden) {
+    display.addEventListener('input', function(e) {
+        let val = e.target.value.replace(/[^0-9]/g, '');
+        hidden.value = val;
+        e.target.value = val ? new Intl.NumberFormat('id-ID').format(val) : '';
+    });
+}
+
+rupiah(document.getElementById('small_display'), document.getElementById('small'));
+rupiah(document.getElementById('large_display'), document.getElementById('large'));
+</script>
+
+@endsection

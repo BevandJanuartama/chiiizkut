@@ -58,9 +58,18 @@ class ProdukController extends Controller
         ));
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $produks = Produk::with('varians')->get();
+        $search = $request->input('search');
+        $query = Produk::with('varians');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_produk', 'like', "%{$search}%")
+                    ->orWhere('deskripsi', 'like', "%{$search}%");
+            });
+        }
+        $produks = $query->latest()->paginate(10);
         return view('admin.produk.index', compact('produks'));
     }
 
@@ -195,9 +204,29 @@ class ProdukController extends Controller
         });
     }
 
-    public function stokLogs()
+    // 🔥 DITAMBAHKAN FITUR SEARCH & PAGINATION
+    public function stokLogs(Request $request)
     {
-        $logs = StokLog::with('produkVarian.produk')->latest()->get();
+        $search = $request->input('search');
+        
+        // Mulai query dengan relasi
+        $query = StokLog::with('produkVarian.produk');
+
+        // Jika ada input pencarian
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                // Cari berdasarkan keterangan di tabel log
+                $q->where('keterangan', 'like', "%{$search}%")
+                  // ATAU cari berdasarkan nama produk di tabel relasi produks
+                  ->orWhereHas('produkVarian.produk', function ($qProduk) use ($search) {
+                      $qProduk->where('nama_produk', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Tampilkan 15 data per halaman (bisa disesuaikan angkanya)
+        $logs = $query->latest()->paginate(10);
+        
         return view('admin.produk.stok_logs', compact('logs'));
     }
 }
