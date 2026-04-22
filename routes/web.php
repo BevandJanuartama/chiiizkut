@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransaksiController;
+use App\Http\Controllers\LaporanController;
 use App\Models\Produk;
 use App\Models\DetailTransaksi;
 use Illuminate\Support\Facades\Route;
@@ -16,11 +17,35 @@ use Illuminate\Support\Facades\Auth;
 */
 
 Route::get('/', function () {
-
+    // Ambil semua produk beserta variannya
     $produks = Produk::with('varians')->get();
-
-    return view('welcome', compact('produks'));
-});
+    
+    // AMBIL BEST SELLER UNTUK TAMPILAN CUSTOMER
+    $bestSellerProducts = DetailTransaksi::select(
+            'produks.id',
+            'produks.nama_produk',
+            'produks.deskripsi',
+            'produks.gambar',
+            DB::raw('SUM(detail_transaksis.qty) as total_terjual')
+        )
+        ->join('produks', 'produks.id', '=', 'detail_transaksis.produk_id')
+        ->join('transaksis', 'transaksis.id', '=', 'detail_transaksis.transaksi_id')
+        ->where('transaksis.status', 'sukses')  // HANYA transaksi yang sukses
+        ->groupBy('produks.id', 'produks.nama_produk', 'produks.deskripsi', 'produks.gambar')
+        ->orderBy('total_terjual', 'DESC')
+        ->limit(10)  // Ambil 10 produk terlaris
+        ->get();
+    
+    // Load varian untuk setiap produk best seller
+    foreach ($bestSellerProducts as $bestSeller) {
+        $bestSeller->varians = Produk::find($bestSeller->id)->varians ?? [];
+        $bestSeller->harga = $bestSeller->varians && count($bestSeller->varians) > 0 
+            ? min(array_column($bestSeller->varians->toArray(), 'harga')) 
+            : 0;
+    }
+    
+    return view('welcome', compact('produks', 'bestSellerProducts'));
+})->name('kiosk');
 
 Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checkout');
 
@@ -52,6 +77,14 @@ Route::middleware('auth')->group(function () {
             Route::put('/stok/update', 'updateStok')->name('stok.update');
             Route::get('/stok/logs', 'stokLogs')->name('stok.logs');
         });
+        
+        // RUTE LAPORAN UNTUK ADMIN 
+        // Laporan Pendapatan
+        Route::get('/laporan/pendapatan', [LaporanController::class, 'pendapatan'])->name('laporan.pendapatan');
+        
+        // Laporan Pesanan
+        Route::get('/laporan/pesanan', [LaporanController::class, 'pesanan'])->name('laporan.pesanan');
+        
     });
 
     // --- Rute Khusus Kasir ---
