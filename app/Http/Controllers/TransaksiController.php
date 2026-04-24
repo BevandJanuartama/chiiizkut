@@ -12,6 +12,7 @@ use App\Events\StokUpdated;
 use App\Events\PesananBaru;
 use App\Models\ProdukVarian;
 
+
 class TransaksiController extends Controller
 {
     public function index()
@@ -21,6 +22,27 @@ class TransaksiController extends Controller
             ->paginate(7); 
 
         return view('kasir.dashboard', compact('transaksis'));
+    }
+
+    public function order()
+    {
+        $produks = Produk::with('varians')->get();
+
+        // 🔥 Ambil best seller dari transaksi
+        $bestSellerProducts = Produk::select(
+                'produks.*',
+                DB::raw('SUM(detail_transaksis.qty) as total_terjual')
+            )
+            ->join('detail_transaksis', 'produks.id', '=', 'detail_transaksis.produk_id')
+            ->join('transaksis', 'transaksis.id', '=', 'detail_transaksis.transaksi_id')
+            ->where('transaksis.status', 'sukses') // hanya yang berhasil
+            ->groupBy('produks.id')
+            ->orderByDesc('total_terjual')
+            ->with('varians')
+            ->take(6) // ambil top 6
+            ->get();
+
+        return view('kasir.order', compact('produks', 'bestSellerProducts'));
     }
 
     public function updateStatus(Request $request, $id)

@@ -92,6 +92,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [TransaksiController::class, 'index'])->name('kasir.dashboard');
     });
 
+    Route::middleware('can:kasir')->prefix('kasir')->group(function () {
+        Route::get('/order', [TransaksiController::class, 'order'])->name('kasir.order');
+    });
+
     // --- Rute Transaksi Umum (Bisa diakses Admin/Kasir) ---
     Route::patch('/transaksi/{id}/status', [TransaksiController::class, 'updateStatus'])->name('transaksi.updateStatus');
     Route::resource('transaksis', TransaksiController::class)->except(['create', 'store']);
