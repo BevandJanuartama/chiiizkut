@@ -46,7 +46,7 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                                 </div>
 
                                 <div class="img-wrapper">
-                                    <img :src="'/storage/' + product.image" class="product-img" alt="Product">
+                                    <img :src="'/storage/' + product.image" class="product-img" alt="Product" loading="lazy">
                                 </div>
                                 
                                 <div class="card-body d-flex flex-column p-2 p-sm-3">
@@ -92,7 +92,7 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                                 </div>
 
                                 <div class="img-wrapper">
-                                    <img :src="'/storage/' + product.image" class="product-img" alt="Product">
+                                    <img :src="'/storage/' + product.image" class="product-img" alt="Product" loading="lazy">
                                 </div>
                                 
                                 <div class="card-body d-flex flex-column p-2 p-sm-3">

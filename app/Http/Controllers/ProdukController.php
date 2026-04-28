@@ -85,18 +85,15 @@ class ProdukController extends Controller
             'deskripsi'   => 'required',
             'harga_small' => 'required|numeric',
             'harga_large' => 'required|numeric',
-            'gambar'      => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'gambar'      => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
-
-        $path = $request->file('gambar')->store('produk_images', 'public');
 
         $produk = Produk::create([
             'nama_produk' => $request->nama_produk,
             'deskripsi'   => $request->deskripsi,
-            'gambar'      => $path,
+            'gambar'      => $this->processAndSaveImage($request->file('gambar')),
         ]);
 
-        // AUTO VARIAN + STOK 0
         ProdukVarian::create([
             'produk_id' => $produk->id,
             'ukuran'    => 'small',
@@ -127,12 +124,12 @@ class ProdukController extends Controller
             'deskripsi'   => 'required',
             'harga_small' => 'required|numeric',
             'harga_large' => 'required|numeric',
-            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'gambar'      => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
 
         if ($request->hasFile('gambar')) {
             Storage::disk('public')->delete($produk->gambar);
-            $produk->gambar = $request->file('gambar')->store('produk_images', 'public');
+            $produk->gambar = $this->processAndSaveImage($request->file('gambar'));
         }
 
         $produk->update([
@@ -141,15 +138,14 @@ class ProdukController extends Controller
             'gambar'      => $produk->gambar,
         ]);
 
-        // UPDATE VARIAN
         $produk->varians()->updateOrCreate(
             ['ukuran' => 'small'],
-            ['harga' => $request->harga_small]
+            ['harga'  => $request->harga_small]
         );
 
         $produk->varians()->updateOrCreate(
             ['ukuran' => 'large'],
-            ['harga' => $request->harga_large]
+            ['harga'  => $request->harga_large]
         );
 
         return redirect()->route('produks.index')->with('success', 'Produk berhasil diperbarui!');
@@ -228,5 +224,26 @@ class ProdukController extends Controller
         $logs = $query->latest()->paginate(10);
         
         return view('admin.produk.stok_logs', compact('logs'));
+    }
+    
+    private function processAndSaveImage($file): string
+    {
+        $manager  = new \Intervention\Image\ImageManager(
+            new \Intervention\Image\Drivers\Gd\Driver()
+        );
+
+        $filename = 'produk_' . uniqid() . '.webp';
+        $folder   = storage_path('app/public/produk_images');
+
+        if (!file_exists($folder)) {
+            mkdir($folder, 0755, true);
+        }
+
+        $manager->decode($file)
+            ->cover(600, 400)
+            ->encode(new \Intervention\Image\Encoders\WebpEncoder(quality: 75))
+            ->save($folder . '/' . $filename);
+
+        return 'produk_images/' . $filename;
     }
 }

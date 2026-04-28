@@ -13,10 +13,9 @@
     @stack('styles')
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap');
         
         body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background-color: #ffffff;
             height: 100vh;
             margin: 0;
