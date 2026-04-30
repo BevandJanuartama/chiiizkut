@@ -5,12 +5,11 @@
     <!-- Header -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
         <div>
-            <h1 class="font-serif fw-bold mb-1">Detail Pendapatan</h1>
+            <h2 class="fw-bold mb-1" style="color: #8A4117; font-family: 'Lora', serif; font-weight: 1000; font-size: 40px;">
+                Detail <span style="color: #F6AA1C;">Pendapatan</span>
+            </h2>
             <p class="text-muted mb-0">Lihat detail pendapatan berdasarkan periode yang dipilih</p>
         </div>
-        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary mt-3 mt-md-0">
-            <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
-        </a>
     </div>
 
     <!-- Filter Tanggal -->
@@ -53,7 +52,7 @@
         <div class="col-sm-6 col-md-4">
             <div class="card card-soft p-3 text-center">
                 <i class="bi bi-graph-up fs-1 text-brand-yellow"></i>
-                <h5 class="mt-2 mb-1 text-muted">Rata-rata per Transaksi</h5>
+                <h5 class="mt-2 mb-1 text-muted">Rata-rata Transaksi</h5>
                 <h3 class="fw-bold text-brand-dark">Rp {{ number_format($rataRata, 0, ',', '.') }}</h3>
             </div>
         </div>
@@ -199,7 +198,7 @@
     <!-- Daftar Transaksi Terbaru (5 data terakhir yang sudah sukses) -->
     <div class="card card-soft p-4 mt-4">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <h5 class="font-serif fw-bold mb-0">Transaksi Terbaru Hari Ini</h5>
+            <h5 class="font-serif fw-bold mb-0">Transaksi Terbaru</h5>
             <span class="badge bg-success">5 Data Terakhir (Terkonfirmasi)</span>
         </div>
         <div class="table-responsive">
@@ -244,10 +243,6 @@
         </div>
         
         @if($transaksis->count() > 5)
-        <div class="text-center mt-3">
-            <small class="text-muted">Menampilkan 5 dari {{ $transaksis->total() }} transaksi sukses</small>
-            <br>
-        </div>
         @endif
     </div>
 </div>

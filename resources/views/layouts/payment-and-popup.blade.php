@@ -73,7 +73,7 @@
             <div class="total-section mb-3">
                 <div class="d-flex justify-content-between align-items-center p-3 rounded-3" style="background: #f8f9fa;">
                     <span class="fw-bold text-dark">
-                        <i class="fas fa-tag me-2 text-chiiiz"></i> Total Tagihan
+                        <i class="fas fa-tag me-2 text-chiiiz" style="font-size: 21px;"></i> Total Tagihan
                     </span>
                     <span class="fw-black text-chiiiz fs-3 fw-bolder" x-text="'Rp ' + cartTotal.toLocaleString('id-ID')"></span>
                 </div>
@@ -83,7 +83,7 @@
         <button @click="openPaymentModal()" class="btn btn-checkout w-100 d-flex justify-content-center align-items-center gap-2 py-3" 
             :class="cart.length > 0 ? 'ready' : ''" :disabled="cart.length === 0">
             <i class="fas fa-arrow-right"></i>
-            <span>Lanjut ke Pembayaran</span>
+            <span>Lanjutkan Pembayaran</span>
         </button>
     </div>
 </div>
@@ -163,7 +163,6 @@
                     <button @click="addToCartFromDetail()" 
                         :disabled="(selectedProduct?.varians && selectedProduct.varians.length > 0 && !selectedVarian) || (selectedProduct?.stok === 0) || (selectedVarian?.stok === 0)"
                         class="btn-popup-primary w-100 py-2 py-sm-3 d-flex align-items-center justify-content-center gap-2">
-                        <i class="fas fa-shopping-bag"></i>
                         <span x-show="!((selectedProduct?.varians && selectedProduct.varians.length > 0 && !selectedVarian) || (selectedProduct?.stok === 0) || (selectedVarian?.stok === 0))">Tambah ke Pesanan</span>
                         <span x-show="(selectedProduct?.varians && selectedProduct.varians.length > 0 && !selectedVarian)">Pilih Ukuran Dulu</span>
                         <span x-show="(selectedProduct?.stok === 0) || (selectedVarian?.stok === 0)">Stok Habis</span>
@@ -253,11 +252,9 @@
                         </div>
                     </div>
 
-                    <button @click="processToNextStep()" class="btn-popup-primary w-100 mt-4 py-3" :disabled="!paymentMethod">
-                        <i class="fas fa-check-circle me-2"></i> Konfirmasi & Bayar Sekarang
+                    <button @click="processToNextStep()" class="btn-popup-primary w-100 mt-4 py-3" :disabled="!paymentMethod"> Lanjutkan Pembayaran
                     </button>
-                    <button @click="closePaymentModal()" class="btn-popup-secondary w-100 mt-2 py-2">
-                        <i class="fas fa-times me-2"></i> Batal
+                    <button @click="closePaymentModal()" class="btn-popup-secondary w-100 mt-2 py-2"> Batal
                     </button>
                 </div>
             </div>
@@ -287,8 +284,7 @@
                             placeholder="Contoh: 081234567890" @input="validationErrors.phone = ''">
                         <div x-show="validationErrors.phone" x-text="validationErrors.phone" class="validation-error text-danger small mt-1"></div>
                     </div>
-                    <button @click="finishOrder()" class="btn-popup-primary w-100 mb-2 py-3">
-                        <i class="fas fa-paper-plane me-2"></i> Selesaikan Pesanan
+                    <button @click="finishOrder()" class="btn-popup-primary w-100 mb-2 py-3"> Selesaikan Pesanan
                     </button>
                     <button @click="step = 'payment_method'" class="btn-popup-secondary w-100 py-2">
                         <i class="fas fa-arrow-left me-2"></i> Kembali
@@ -322,11 +318,9 @@
                             <i class="fas fa-info-circle me-1"></i> Scan menggunakan E-Wallet atau M-Banking
                         </p>
                     </div>
-                    <button @click="step = 'customer_form'" class="btn-popup-primary w-100 mb-2 py-3">
-                        <i class="fas fa-check-circle me-2"></i> Saya Sudah Bayar
+                    <button @click="step = 'customer_form'" class="btn-popup-primary w-100 mb-2 py-3"> Konfirmasi Pembayaran
                     </button>
-                    <button @click="step = 'payment_method'" class="btn-popup-secondary w-100 py-2">
-                        <i class="fas fa-arrow-left me-2"></i> Kembali
+                    <button @click="step = 'payment_method'" class="btn-popup-secondary w-100 py-2"> Kembali
                     </button>
                 </div>
             </div>

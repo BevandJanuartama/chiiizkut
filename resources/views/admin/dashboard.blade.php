@@ -3,7 +3,9 @@
 @section('content')
     <header class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 mb-md-5 gap-3">
         <div>
-            <h1 class="font-serif fw-bold mb-1 fs-2 fs-md-1">Halo, Selamat Pagi!</h1>
+            <h2 class="fw-bold mb-1" style="color: #8A4117; font-family: 'Lora', serif; font-weight: 1000; font-size: 40px;">
+                Halo <span style="color: #F6AA1C;">Admin</span>
+            </h2>
             <p class="text-muted mb-0 small fs-md-base">Siap mengecek performa toko hari ini?</p>
         </div>
     </header>
@@ -18,7 +20,7 @@
             <div class="card promo-card-1 p-3 p-md-4 h-100 position-relative overflow-hidden">
                 <span class="badge bg-white text-dark rounded-pill mb-2 mb-md-3"
                     style="width: fit-content; font-size: 0.65rem;">HARI INI</span>
-                <h3 class="fw-bold mb-1 text-white fs-6 fs-md-5">Total Pendapatan Hari Ini</h3>
+                <h3 class="fw-bold mb-1 text-white fs-6 fs-md-5">Total Pendapatan</h3>
                 <h2 class="fw-bolder mb-3 mb-md-4 text-white fs-3 fs-md-1">Rp
                     {{ number_format($pendapatanHariIni, 0, ',', '.') }}</h2>
                 <a href="{{ route('laporan.pendapatan', ['start_date' => now()->startOfDay()->format('Y-m-d H:i:s'), 'end_date' => now()->endOfDay()->format('Y-m-d H:i:s')]) }}"
@@ -34,7 +36,7 @@
             <div class="card promo-card-2 p-3 p-md-4 h-100 position-relative overflow-hidden">
                 <span class="badge bg-light text-dark rounded-pill mb-2 mb-md-3"
                     style="width: fit-content; font-size: 0.65rem;">HARI INI</span>
-                <h3 class="fw-bold mb-1 fs-6 fs-md-5">Pesanan Masuk Hari Ini</h3>
+                <h3 class="fw-bold mb-1 fs-6 fs-md-5">Pesanan Masuk</h3>
                 <h2 class="fw-bolder mb-3 mb-md-4 fs-3 fs-md-1">{{ $totalPesananHariIni }} <span
                         class="fs-6 fs-md-5 fw-medium">Order</span></h2>
                 <a href="{{ route('laporan.pesanan', ['start_date' => now()->startOfDay()->format('Y-m-d H:i:s'), 'end_date' => now()->endOfDay()->format('Y-m-d H:i:s')]) }}"

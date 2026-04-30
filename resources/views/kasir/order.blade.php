@@ -8,16 +8,38 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
 
 @section('content')
 <div class="kiosk-container w-100 d-flex flex-column px-2 px-sm-3 px-md-4 py-2 py-sm-3">
-    
-    <header class="d-flex flex-wrap justify-content-between align-items-center mb-3 mb-sm-4 pb-2 pb-sm-3 border-bottom flex-shrink-0">
-        <div class="d-flex align-items-center">
-            <img src="{{ asset('images/logo.png') }}" alt="Logo" class="logo-header img-fluid" style="height: clamp(35px, 6vw, 50px); width: auto;">
-        </div>
-        <div class="text-end">
-            <h4 class="mb-1 text-secondary fw-bold" style="font-size: clamp(0.9rem, 4vw, 1.25rem);">Halo, selamat datang !</h4>
-            <p class="mb-0 text-muted small fw-semibold d-none d-sm-block">Siap mencicipi kelezatan Chiiizkut hari ini?</p>
-        </div>
-    </header>
+    <!-- Navbar Custom -->
+        <nav class="navbar-custom mb-3 mb-md-5">
+            <div class="container d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <img src="/images/logo.png" alt="Logo ChiiiZkut" style="max-height: 50px; object-fit: contain;"
+                        onerror="this.onerror=null; this.style.display='none'">
+                </div>
+
+                <div class="d-flex align-items-center gap-2 gap-sm-3 flex-wrap justify-content-center">
+                    <!-- Tombol Monitoring Antrean -->
+                    <a href="{{ route('kasir.dashboard') }}"
+                        class="btn btn-nav-monitoring rounded-pill btn-sm fw-bold px-2 px-sm-3" style="font-size: 0.7rem;">
+                        <i class="bi bi-display me-1"></i> <span class="d-none d-sm-inline">Monitoring Antrean</span>
+                    </a>
+
+                    <!-- Tombol Manajemen Pemesanan -->
+                    <a href="{{ route('kasir.order') }}"
+                        class="btn btn-nav-manajemen rounded-pill btn-sm fw-bold px-2 px-sm-3"
+                        style="font-size: 0.7rem;">
+                        <i class="bi bi-receipt me-1"></i> <span class="d-none d-sm-inline">Manajemen Pemesanan</span>
+                    </a>
+
+                    <form action="{{ route('logout') }}" method="POST" class="m-0">
+                        @csrf
+                        <button type="submit" class="btn btn-danger rounded-pill btn-sm fw-bold px-3 px-sm-4"
+                            style="font-size: 0.7rem;">
+                            <i class="bi bi-box-arrow-right"></i> <span class="d-none d-sm-inline">Logout</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </nav>
 
     <div class="row flex-grow-1 overflow-hidden" style="min-height: 0;">
         
@@ -121,10 +143,126 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
 </div>
 @endsection
 
+@push('styles')
+<style>
+    /* Root variables dari Kasir Panel */
+    :root {
+        --bg-cream: #FFFCF5;
+        --text-brown: #5C3D2E;
+        --brand-yellow: #F6AA1C;
+        --brand-dark: #8A4117;
+        --card-border: #F0E6D2;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    /* Background dari Kasir Panel (diubah seperti code kedua) */
+    body {
+        background-color: var(--bg-cream);
+        color: var(--text-brown);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        overflow-x: hidden;
+        margin: 0;
+        padding: 0;
+        overflow-y: scroll !important;
+    }
+
+    /* Navbar Custom - PERSIS dari Kasir Panel (sama dengan code kedua) */
+    .navbar-custom {
+        background-color: #ffffff;
+        border-bottom: 2px solid var(--card-border);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        padding: 0.8rem 0;
+    }
+
+    .navbar-custom .container {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .navbar-custom .container {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .navbar-custom .d-flex.align-items-center.gap-3 {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+
+    /* Pastikan container kiosk memiliki background cream */
+    .kiosk-container {
+        background-color: var(--bg-cream);
+        min-height: 100vh;
+    }
+
+    /* Tombol Monitoring Antrean (Langsung Kuning) */
+        .btn-nav-monitoring {
+            background-color: #F6AA1C !important;
+            color: #ffffff !important; /* Teks putih */
+            border: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(246, 170, 28, 0.2);
+        }
+        
+        /* Efek klik/geser yang halus (sedikit terangkat) */
+        .btn-nav-monitoring:hover, 
+        .btn-nav-monitoring:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(246, 170, 28, 0.35);
+            filter: brightness(1.05);
+        }
+
+        /* Tombol Manajemen Pemesanan (Langsung Coklat Gelap) */
+        .btn-nav-manajemen {
+            background-color: #8A4117 !important;
+            color: #ffffff !important; /* Teks putih */
+            border: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(138, 65, 23, 0.2);
+        }
+        
+        /* Efek klik/geser yang halus (sedikit terangkat) */
+        .btn-nav-manajemen:hover, 
+        .btn-nav-manajemen:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(138, 65, 23, 0.35);
+            filter: brightness(1.1);
+        }
+
+        .stok-warning {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #2c2c2c;
+            color: #F2AF17;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 700;
+            z-index: 9999;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 2px solid #F2AF17;
+        }
+</style>
+@endpush
+
 @push('body-scripts')
 <script>
     function kioskApp(dbProducts, dbBestSellerProducts) {
         return {
+            // ===== TOAST NOTIFICATION STATE =====
+            showStokWarning: false,
+            stokWarningMessage: '',
+            warningTimeout: null,
+
             // ===== PRODUCT DETAIL POPUP STATE =====
             showDetail: false,
             selectedProduct: null,
@@ -177,17 +315,24 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                     p.isBestSeller = bestSellerIds.includes(p.id);
                     return p;
                 });
-                
-                console.log('========== BEST SELLER ==========');
-                console.log('Jumlah Best Seller: ' + this.bestSellerList.length);
-                this.bestSellerList.forEach(p => {
-                    console.log('✅ ' + p.name + ' | Terjual: ' + p.total_terjual + ' pcs');
-                });
-                console.log('=================================');
             },
             
             get cartTotal() { 
                 return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); 
+            },
+
+            // ===== FUNGSI UNTUK MEMUNCULKAN CUSTOM TOAST =====
+            showCustomAlert(message) {
+                this.stokWarningMessage = message;
+                this.showStokWarning = true;
+                
+                if(this.warningTimeout) {
+                    clearTimeout(this.warningTimeout);
+                }
+                
+                this.warningTimeout = setTimeout(() => {
+                    this.showStokWarning = false;
+                }, 3000);
             },
 
             openDetail(product) {
@@ -204,7 +349,7 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                 if (!this.selectedProduct) return;
 
                 if (this.selectedProduct.varians && this.selectedProduct.varians.length > 0 && !this.selectedVarian) {
-                    alert('Pilih ukuran terlebih dahulu!');
+                    this.showCustomAlert('Pilih ukuran terlebih dahulu!');
                     return;
                 }
 
@@ -223,7 +368,7 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                 const qtyDiKeranjang = existingItem ? existingItem.qty : 0;
 
                 if (qtyDiKeranjang + 1 > stokTersedia) {
-                    alert('Stok tidak mencukupi!');
+                    this.showCustomAlert('Stok tidak mencukupi!');
                     return;
                 }
 
@@ -250,7 +395,6 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                 if (item.qty > 1) {
                     item.qty--;
                 } else {
-                    // Hapus item jika qty = 1 dan user klik minus
                     const index = this.cart.findIndex(i => i.cartKey === item.cartKey);
                     if (index !== -1) {
                         this.cart.splice(index, 1);
@@ -259,13 +403,12 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
             },
 
             increaseQty(item) {
-                // Cek stok sebelum menambah
                 const product = this.allProducts.find(p => p.id === item.id);
                 const varian = product?.varians?.find(v => v.id === item.varianId);
                 const stokTersedia = varian ? parseInt(varian.stok) : parseInt(product?.stok || 0);
                 
                 if (item.qty + 1 > stokTersedia) {
-                    alert('Stok tidak mencukupi!');
+                    this.showCustomAlert('Stok tidak mencukupi!');
                     return;
                 }
                 item.qty++;
@@ -289,7 +432,7 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
 
             processToNextStep() {
                 if (!this.paymentMethod) {
-                    alert('Pilih metode pembayaran terlebih dahulu!');
+                    this.showCustomAlert('Pilih metode pembayaran terlebih dahulu!');
                     return;
                 }
                 
@@ -364,11 +507,11 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                         }, 8000);
                         
                     } else {
-                        alert(result.message || 'Terjadi kesalahan, silakan coba lagi');
+                        this.showCustomAlert(result.message || 'Terjadi kesalahan, silakan coba lagi');
                     }
                 } catch (error) { 
                     console.error('Error:', error);
-                    alert('Error Sistem: Cek Koneksi Server/Database');
+                    this.showCustomAlert('Error Sistem: Cek Koneksi Server/Database');
                 }
             },
 

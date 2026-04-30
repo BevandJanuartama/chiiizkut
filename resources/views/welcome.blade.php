@@ -125,6 +125,11 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
 <script>
     function kioskApp(dbProducts, dbBestSellerProducts) {
         return {
+            // ===== TOAST NOTIFICATION STATE =====
+            showStokWarning: false,
+            stokWarningMessage: '',
+            warningTimeout: null,
+
             // ===== PRODUCT DETAIL POPUP STATE =====
             showDetail: false,
             selectedProduct: null,
@@ -177,17 +182,26 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                     p.isBestSeller = bestSellerIds.includes(p.id);
                     return p;
                 });
-                
-                console.log('========== BEST SELLER ==========');
-                console.log('Jumlah Best Seller: ' + this.bestSellerList.length);
-                this.bestSellerList.forEach(p => {
-                    console.log('✅ ' + p.name + ' | Terjual: ' + p.total_terjual + ' pcs');
-                });
-                console.log('=================================');
             },
             
             get cartTotal() { 
                 return this.cart.reduce((sum, i) => sum + (i.price * i.qty), 0); 
+            },
+
+            // ===== FUNGSI UNTUK MEMUNCULKAN CUSTOM TOAST =====
+            showCustomAlert(message) {
+                this.stokWarningMessage = message;
+                this.showStokWarning = true;
+                
+                // Clear timeout supaya tidak bertumpuk jika diklik berkali-kali dengan cepat
+                if(this.warningTimeout) {
+                    clearTimeout(this.warningTimeout);
+                }
+                
+                // Sembunyikan otomatis setelah 3 detik
+                this.warningTimeout = setTimeout(() => {
+                    this.showStokWarning = false;
+                }, 3000);
             },
 
             openDetail(product) {
@@ -204,7 +218,8 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                 if (!this.selectedProduct) return;
 
                 if (this.selectedProduct.varians && this.selectedProduct.varians.length > 0 && !this.selectedVarian) {
-                    alert('Pilih ukuran terlebih dahulu!');
+                    // MENGGANTI ALERT BAWAAN
+                    this.showCustomAlert('Pilih ukuran terlebih dahulu!');
                     return;
                 }
 
@@ -223,7 +238,8 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                 const qtyDiKeranjang = existingItem ? existingItem.qty : 0;
 
                 if (qtyDiKeranjang + 1 > stokTersedia) {
-                    alert('Stok tidak mencukupi!');
+                    // MENGGANTI ALERT BAWAAN
+                    this.showCustomAlert('Stok tidak mencukupi!');
                     return;
                 }
 
@@ -250,7 +266,6 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                 if (item.qty > 1) {
                     item.qty--;
                 } else {
-                    // Hapus item jika qty = 1 dan user klik minus
                     const index = this.cart.findIndex(i => i.cartKey === item.cartKey);
                     if (index !== -1) {
                         this.cart.splice(index, 1);
@@ -259,13 +274,13 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
             },
 
             increaseQty(item) {
-                // Cek stok sebelum menambah
                 const product = this.allProducts.find(p => p.id === item.id);
                 const varian = product?.varians?.find(v => v.id === item.varianId);
                 const stokTersedia = varian ? parseInt(varian.stok) : parseInt(product?.stok || 0);
                 
                 if (item.qty + 1 > stokTersedia) {
-                    alert('Stok tidak mencukupi!');
+                    // MENGGANTI ALERT BAWAAN
+                    this.showCustomAlert('Stok tidak mencukupi!');
                     return;
                 }
                 item.qty++;
@@ -289,7 +304,8 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
 
             processToNextStep() {
                 if (!this.paymentMethod) {
-                    alert('Pilih metode pembayaran terlebih dahulu!');
+                    // MENGGANTI ALERT BAWAAN
+                    this.showCustomAlert('Pilih metode pembayaran terlebih dahulu!');
                     return;
                 }
                 
@@ -364,11 +380,13 @@ x-data='kioskApp(@json($produks ?? []), @json($bestSellerProducts ?? []))' x-ini
                         }, 8000);
                         
                     } else {
-                        alert(result.message || 'Terjadi kesalahan, silakan coba lagi');
+                        // MENGGANTI ALERT BAWAAN
+                        this.showCustomAlert(result.message || 'Terjadi kesalahan, silakan coba lagi');
                     }
                 } catch (error) { 
                     console.error('Error:', error);
-                    alert('Error Sistem: Cek Koneksi Server/Database');
+                    // MENGGANTI ALERT BAWAAN
+                    this.showCustomAlert('Error Sistem: Cek Koneksi Server/Database');
                 }
             },
 
