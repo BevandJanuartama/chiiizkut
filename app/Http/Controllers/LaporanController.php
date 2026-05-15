@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaksi;
 use Carbon\Carbon;
+use App\Exports\PendapatanExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class LaporanController extends Controller
 {
@@ -157,5 +159,12 @@ class LaporanController extends Controller
             'statusFilter',
             'search'
         ));
+    }
+
+    public function exportExcel()
+    {
+        // Nama file akan menyertakan tanggal hari ini
+        $fileName = 'laporan-pendapatan-' . date('Y-m-d') . '.xlsx';
+        return Excel::download(new PendapatanExport, $fileName);
     }
 }

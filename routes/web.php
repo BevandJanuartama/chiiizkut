@@ -84,6 +84,8 @@ Route::middleware('auth')->group(function () {
         
         // Laporan Pesanan
         Route::get('/laporan/pesanan', [LaporanController::class, 'pesanan'])->name('laporan.pesanan');
+
+        Route::get('/laporan/pendapatan/export', [LaporanController::class, 'exportExcel'])->name('laporan.pendapatan.export');
         
     });
 

@@ -18,17 +18,27 @@
             <div class="col-md-4">
                 <label class="form-label fw-semibold small text-muted">Dari Tanggal</label>
                 <input type="date" name="start_date" class="form-control" 
-                       value="{{ $startDate instanceof \Carbon\Carbon ? $startDate->format('Y-m-d') : date('Y-m-d', strtotime($startDate)) }}">
+                    value="{{ $startDate instanceof \Carbon\Carbon ? $startDate->format('Y-m-d') : date('Y-m-d', strtotime($startDate)) }}">
             </div>
             <div class="col-md-4">
                 <label class="form-label fw-semibold small text-muted">Sampai Tanggal</label>
                 <input type="date" name="end_date" class="form-control" 
-                       value="{{ $endDate instanceof \Carbon\Carbon ? $endDate->format('Y-m-d') : date('Y-m-d', strtotime($endDate)) }}">
+                    value="{{ $endDate instanceof \Carbon\Carbon ? $endDate->format('Y-m-d') : date('Y-m-d', strtotime($endDate)) }}">
             </div>
+            
+            <!-- Kolom Tombol (Tetap col-md-4 secara total, tapi di dalamnya dibagi 2) -->
             <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100" style="background-color: var(--brand-yellow); border: none; color: var(--text-brown);">
-                    <i class="bi bi-filter"></i> Filter
-                </button>
+                <div class="d-flex gap-2">
+                    <!-- Tombol Filter tetap menggunakan data input -->
+                    <button type="submit" class="btn btn-primary w-50" style="background-color: var(--brand-yellow); border: none; color: var(--text-brown);">
+                        <i class="bi bi-filter"></i> Filter
+                    </button>
+                    
+                    <!-- Tombol Laporan: Bersih tanpa parameter agar cetak semua data -->
+                    <a href="{{ route('laporan.pendapatan.export') }}" class="btn btn-success w-50">
+                        <i class="bi bi-file-earmark-excel"></i> Laporan
+                    </a>
+                </div>
             </div>
         </form>
     </div>
