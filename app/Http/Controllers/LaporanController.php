@@ -163,7 +163,6 @@ class LaporanController extends Controller
 
     public function exportExcel()
     {
-        // Nama file akan menyertakan tanggal hari ini
         $fileName = 'laporan-pendapatan-' . date('Y-m-d') . '.xlsx';
         return Excel::download(new PendapatanExport, $fileName);
     }

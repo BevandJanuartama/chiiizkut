@@ -26,23 +26,30 @@ class TransaksiController extends Controller
 
     public function order()
     {
-        $produks = Produk::with('varians')->get();
+        $produks = Produk::with('varians')
+            ->where('is_hidden', false)
+            ->get();
 
-        // 🔥 Ambil best seller dari transaksi
+        // Ambil produk Mix secara eksplisit
+        $mixProduk = Produk::with('varians')
+            ->where('nama_produk', 'Mix')
+            ->first();
+
         $bestSellerProducts = Produk::select(
                 'produks.*',
                 DB::raw('SUM(detail_transaksis.qty) as total_terjual')
             )
             ->join('detail_transaksis', 'produks.id', '=', 'detail_transaksis.produk_id')
             ->join('transaksis', 'transaksis.id', '=', 'detail_transaksis.transaksi_id')
-            ->where('transaksis.status', 'sukses') // hanya yang berhasil
+            ->where('transaksis.status', 'sukses')
+            ->where('produks.is_hidden', false)
             ->groupBy('produks.id')
             ->orderByDesc('total_terjual')
             ->with('varians')
-            ->take(6) // ambil top 6
+            ->take(6)
             ->get();
 
-        return view('kasir.order', compact('produks', 'bestSellerProducts'));
+        return view('kasir.order', compact('produks', 'bestSellerProducts', 'mixProduk')); // ← tambah mixProduk
     }
 
     public function updateStatus(Request $request, $id)
@@ -128,18 +135,20 @@ class TransaksiController extends Controller
             'items.*.id' => 'required|exists:produks,id',
             'items.*.qty' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric',
+            'items.*.varian_id' => 'required',
+            'items.*.varian_mix' => 'nullable|string',
             'name' => 'nullable|string',
             'phone' => 'nullable|string',
             'payment_method' => 'nullable|string',
         ]);
 
         try {
+            // Tangkap hasil return dari closure ke dalam $result
             $result = DB::transaction(function () use ($request) {
                 $lastOrder = Transaksi::whereDate('created_at', now()->toDateString())->count();
                 $queueNumber = $lastOrder + 1;
                 
-                // Generate kode unik acak
-                $kodeUnik = strtoupper(bin2hex(random_bytes(6))); // Contoh: A1B2C3D4E5F6
+                $kodeUnik = strtoupper(bin2hex(random_bytes(6)));
 
                 $transaksi = Transaksi::create([
                     'nama' => $request->name,
@@ -148,18 +157,15 @@ class TransaksiController extends Controller
                     'metode_pembayaran' => $request->payment_method,
                     'nomor_antrean' => $queueNumber,
                     'status' => 'pending',
-                    'kode_unik' => $kodeUnik, // Simpan kode unik
+                    'kode_unik' => $kodeUnik,
                 ]);
 
                 foreach ($request->items as $item) {
                     $produk = Produk::findOrFail($item['id']);
-
-                    // ✅ Ambil varian yang dipilih customer
                     $varian = ProdukVarian::where('produk_id', $item['id'])
                                 ->where('id', $item['varian_id'])
                                 ->firstOrFail();
 
-                    // ✅ Cek stok dari varian
                     if ($varian->stok < $item['qty']) {
                         throw new \Exception("Stok {$produk->nama_produk} ({$varian->ukuran}) tidak cukup!");
                     }
@@ -168,32 +174,33 @@ class TransaksiController extends Controller
                         'transaksi_id'     => $transaksi->id,
                         'produk_id'        => $item['id'],
                         'produk_varian_id' => $item['varian_id'],
+                        'varian_mix'       => $item['varian_mix'] ?? null,
                         'qty'              => $item['qty'],
                         'harga_satuan'     => $item['price'],
                         'subtotal'         => $item['price'] * $item['qty'],
                     ]);
 
-                    // ✅ Kurangi stok dari varian
                     $varian->decrement('stok', $item['qty']);
-
                     broadcast(new StokUpdated($produk->id, $varian->stok));
                 }
 
+                // Kembalikan data agar bisa dipakai di luar closure
                 return [
                     'queue_number' => $queueNumber,
                     'transaksi_id' => $transaksi->id
                 ];
             });
 
-            // Broadcast pesanan baru
+            // Broadcast pesanan baru menggunakan $result['transaksi_id']
             $jumlahPending = Transaksi::where('status', 'pending')->count();
             broadcast(new PesananBaru($jumlahPending));
 
             return response()->json([
                 'success' => true,
                 'message' => 'Pesanan berhasil dibuat',
-                'queue_number' => $result['queue_number']
+                'queue_number' => $result['queue_number'] // Mengambil dari $result
             ], 201);
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

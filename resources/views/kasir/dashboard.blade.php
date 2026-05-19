@@ -122,9 +122,16 @@
                                                     @foreach ($t->details as $detail)
                                                         <span class="badge rounded-pill px-2 py-1 mb-1 me-1"
                                                             style="font-weight: 500; font-size: 0.8rem; background-color: #f8f9fa; color: #5C3D2E; border: 1px solid #F0E6D2;">
-                                                            {{ $detail->varian->produk->nama_produk }}
-                                                            <span
-                                                                class="text-warning ms-1 text-uppercase">{{ $detail->varian->ukuran }}</span>
+                                                            
+                                                            @if ($detail->varian_mix)
+                                                                {{-- Produk Mix --}}
+                                                                {{ $detail->varian_mix }}
+                                                            @else
+                                                                {{-- Produk Biasa --}}
+                                                                {{ $detail->varian->produk->nama_produk }}
+                                                                <span class="text-warning ms-1 text-uppercase">{{ $detail->varian->ukuran }}</span>
+                                                            @endif
+
                                                             <span class="text-muted ms-1">x{{ $detail->qty }}</span>
                                                         </span>
                                                     @endforeach

@@ -22,6 +22,8 @@ return new class extends Migration
             // TAMBAHKAN KOLOM INI AGAR CONTROLLER TIDAK ERROR
             $table->integer('nomor_antrean')->default(0); 
             $table->enum('status', ['pending', 'sukses', 'gagal'])->default('pending');
+
+            $table->string('mix_flavor')->nullable();
             
             $table->timestamps();
         });

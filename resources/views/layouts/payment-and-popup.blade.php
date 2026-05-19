@@ -123,11 +123,11 @@
                     <i class="fas fa-times"></i>
                 </button>
                 <!-- Badge stok -->
-                <div x-show="selectedProduct && selectedProduct.stok <= 5 && selectedProduct.stok > 0" 
+                <div x-show="selectedProduct?.stok <= 5 && selectedProduct?.stok > 0"
                      class="position-absolute bottom-0 start-0 m-2 bg-warning text-dark px-2 py-1 rounded-pill small fw-bold">
-                    <i class="fas fa-box me-1"></i> Stok: <span x-text="selectedProduct.stok"></span>
+                    <i class="fas fa-box me-1"></i> Stok: <span x-text="selectedProduct?.stok"></span>
                 </div>
-                <div x-show="selectedProduct && selectedProduct.stok === 0" 
+                <div x-show="selectedProduct?.stok === 0"
                      class="position-absolute bottom-0 start-0 m-2 bg-danger text-white px-2 py-1 rounded-pill small fw-bold">
                     <i class="fas fa-times-circle me-1"></i> Stok Habis
                 </div>
@@ -140,32 +140,158 @@
                 <template x-if="selectedProduct?.varians && selectedProduct.varians.length > 0">
                     <div>
                         <label class="fw-bold mb-2 d-block">
-                            <i class="fas fa-tag me-1 text-chiiiz"></i> Pilih Ukuran:
+                            <i class="fas fa-tag me-1 text-chiiiz"></i>
+                            Pilih Ukuran:
                         </label>
-                        <div class="d-flex gap-2 gap-sm-3 mb-3 mb-sm-4 flex-wrap">
-                            <template x-for="varian in selectedProduct.varians" :key="varian.id">
-                                <div class="size-card px-3 py-2 rounded-3 border text-center cursor-pointer position-relative"
-                                    :class="selectedVarian?.id === varian.id ? 'active border-warning bg-warning bg-opacity-10' : 'border-secondary'"
-                                    @click="selectedVarian = varian" style="min-width: 70px;">
-                                    <div class="text-uppercase small fw-bold text-muted mb-1" x-text="varian.ukuran"></div>
-                                    <div class="fw-bold text-chiiiz" x-text="'Rp ' + parseInt(varian.harga).toLocaleString('id-ID')"></div>
-                                    <div x-show="varian.stok <= 3 && varian.stok > 0" 
-                                         class="small text-warning mt-1" x-text="'Stok: ' + varian.stok"></div>
-                                    <div x-show="varian.stok === 0" 
-                                         class="small text-danger mt-1 fw-bold">Habis</div>
+
+                        <!-- GRID -->
+                        <div class="row g-2 mb-3">
+
+                            <!-- SMALL -->
+                            <template
+                                x-for="varian in selectedProduct?.varians.filter(v => v.ukuran === 'small')"
+                                :key="'small-' + varian.id">
+
+                                <div class="col-6">
+
+                                    <div
+                                        class="size-card px-3 py-3 rounded-3 border text-center cursor-pointer h-100"
+
+                                        :class="
+                                            selectedVarian?.id === varian.id && !isMix
+                                            ? 'active border-warning bg-warning bg-opacity-10'
+                                            : 'border-secondary'
+                                        "
+
+                                        @click="
+                                            selectedVarian = varian;
+                                            isMix = false;
+                                            selectedMixFlavor = '';
+                                        ">
+
+                                        <div class="text-uppercase small fw-bold text-muted mb-1">
+                                            Small
+                                        </div>
+
+                                        <div class="fw-bold text-chiiiz"
+                                            x-text="'Rp ' + parseInt(varian.harga).toLocaleString('id-ID')">
+                                        </div>
+
+                                    </div>
+
                                 </div>
+
                             </template>
+
+                            <!-- LARGE -->
+                            <template
+                                x-for="varian in selectedProduct?.varians.filter(v => v.ukuran === 'large')"
+                                :key="'large-' + varian.id">
+
+                                <div class="col-6">
+
+                                    <div
+                                        class="size-card px-3 py-3 rounded-3 border text-center cursor-pointer h-100"
+
+                                        :class="
+                                            selectedVarian?.id === varian.id && !isMix
+                                            ? 'active border-warning bg-warning bg-opacity-10'
+                                            : 'border-secondary'
+                                        "
+
+                                        @click="
+                                            selectedVarian = varian;
+                                            isMix = false;
+                                            selectedMixFlavor = '';
+                                        ">
+
+                                        <div class="text-uppercase small fw-bold text-muted mb-1">
+                                            Large
+                                        </div>
+
+                                        <div class="fw-bold text-chiiiz"
+                                            x-text="'Rp ' + parseInt(varian.harga).toLocaleString('id-ID')">
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </template>
+
+                            <!-- MIX -->
+                            <div class="col-12">
+
+                                <div
+                                    class="size-card px-3 py-3 rounded-3 border text-center cursor-pointer"
+
+                                    :class="
+                                        isMix
+                                        ? 'active border-warning bg-warning bg-opacity-10'
+                                        : 'border-secondary'
+                                    "
+
+                                    @click="
+                                        isMix = true;
+                                        selectedVarian = mixProduct?.varians?.find(v => v.ukuran === 'large') ?? null;
+                                    ">
+
+                                    <div class="text-uppercase small fw-bold text-muted mb-1">
+                                        Mix
+                                    </div>
+
+                                    <div class="fw-bold text-chiiiz">
+                                        Rp 50.000
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <!-- PILIH FLAVOR -->
+                        <div x-show="isMix" x-transition class="mt-2">
+
+                            <label class="fw-bold mb-2 d-block">
+                                Pilih Mix Flavor:
+                            </label>
+
+                            <select
+                                x-model="selectedMixFlavor"
+                                class="form-select">
+
+                                <option value="">
+                                    Pilih Flavor
+                                </option>
+
+                                <template
+                                    x-for="product in allProducts.filter(
+                                        p => p.id !== selectedProduct.id && !p.is_hidden
+                                    )"
+                                    :key="product.id">
+
+                                    <option
+                                        :value="product.name"
+                                        x-text="product.name">
+                                    </option>
+
+                                </template>
+
+                            </select>
+
                         </div>
                     </div>
                 </template>
 
                 <div class="pt-2 pt-sm-3 border-top">
-                    <button @click="addToCartFromDetail()" 
-                        :disabled="(selectedProduct?.varians && selectedProduct.varians.length > 0 && !selectedVarian) || (selectedProduct?.stok === 0) || (selectedVarian?.stok === 0)"
+                    <button
+                        @click="addToCartFromDetail()"
+                        :disabled="(!isMix && !selectedVarian) || (isMix && !selectedMixFlavor)"
                         class="btn-popup-primary w-100 py-2 py-sm-3 d-flex align-items-center justify-content-center gap-2">
-                        <span x-show="!((selectedProduct?.varians && selectedProduct.varians.length > 0 && !selectedVarian) || (selectedProduct?.stok === 0) || (selectedVarian?.stok === 0))">Tambah ke Pesanan</span>
-                        <span x-show="(selectedProduct?.varians && selectedProduct.varians.length > 0 && !selectedVarian)">Pilih Ukuran Dulu</span>
-                        <span x-show="(selectedProduct?.stok === 0) || (selectedVarian?.stok === 0)">Stok Habis</span>
+                        
+                        <span x-text="(!isMix && !selectedVarian) ? 'Pilih Ukuran Dulu' : ((isMix && !selectedMixFlavor) ? 'Pilih Flavor Mix' : 'Tambah ke Pesanan')"></span>
+
                     </button>
                 </div>
             </div>
@@ -312,7 +438,7 @@
                     </div>
                     <div class="qris-card mb-4">
                         <div class="qris-image d-flex justify-content-center">
-                            <img src="{{ asset('images/monyet.jpg') }}" alt="QRIS" style="width: 180px; height: 180px; object-fit: cover; border-radius: 20px;" class="img-fluid">
+                            <img src="{{ asset('images/qris.jpeg') }}" alt="QRIS" style="width: 180px; height: 180px; object-fit: cover;" class="img-fluid">
                         </div>
                         <p class="text-muted small mt-3 mb-0">
                             <i class="fas fa-info-circle me-1"></i> Scan menggunakan E-Wallet atau M-Banking

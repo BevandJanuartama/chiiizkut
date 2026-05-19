@@ -13,6 +13,7 @@ class Produk extends Model
         'nama_produk',
         'deskripsi',
         'gambar',
+        'is_hidden',
     ];
 
     /**

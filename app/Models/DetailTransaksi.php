@@ -18,6 +18,7 @@ class DetailTransaksi extends Model
         'transaksi_id', 
         'produk_id', 
         'produk_varian_id',
+        'varian_mix',
         'qty', 
         'harga_satuan', 
         'subtotal'

@@ -17,8 +17,15 @@ use Illuminate\Support\Facades\Auth;
 */
 
 Route::get('/', function () {
-    // Ambil semua produk beserta variannya
-    $produks = Produk::with('varians')->get();
+    // Ambil semua produk KECUALI yang hidden (untuk tampilan grid)
+    $produks = Produk::with('varians')
+        ->where('is_hidden', false)
+        ->get();
+
+    // Ambil produk Mix secara eksplisit
+    $mixProduk = Produk::with('varians')
+        ->where('nama_produk', 'Mix')
+        ->first();
     
     // AMBIL BEST SELLER UNTUK TAMPILAN CUSTOMER
     $bestSellerProducts = DetailTransaksi::select(
@@ -30,13 +37,13 @@ Route::get('/', function () {
         )
         ->join('produks', 'produks.id', '=', 'detail_transaksis.produk_id')
         ->join('transaksis', 'transaksis.id', '=', 'detail_transaksis.transaksi_id')
-        ->where('transaksis.status', 'sukses')  // HANYA transaksi yang sukses
+        ->where('transaksis.status', 'sukses')
+        ->where('produks.is_hidden', false)
         ->groupBy('produks.id', 'produks.nama_produk', 'produks.deskripsi', 'produks.gambar')
         ->orderBy('total_terjual', 'DESC')
-        ->limit(10)  // Ambil 10 produk terlaris
+        ->limit(10)
         ->get();
     
-    // Load varian untuk setiap produk best seller
     foreach ($bestSellerProducts as $bestSeller) {
         $bestSeller->varians = Produk::find($bestSeller->id)->varians ?? [];
         $bestSeller->harga = $bestSeller->varians && count($bestSeller->varians) > 0 
@@ -44,7 +51,7 @@ Route::get('/', function () {
             : 0;
     }
     
-    return view('welcome', compact('produks', 'bestSellerProducts'));
+    return view('welcome', compact('produks', 'bestSellerProducts', 'mixProduk')); // ← tambah mixProduk
 })->name('kiosk');
 
 Route::post('/checkout', [TransaksiController::class, 'checkout'])->name('checkout');

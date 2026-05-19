@@ -14,7 +14,7 @@ class PendapatanExport implements FromCollection, WithHeadings, WithMapping, Sho
 {
     public function collection()
     {
-        return Transaksi::with(['details.produk'])
+        return Transaksi::with(['details.produk', 'details.varian'])
             ->where('status', 'sukses')
             ->orderBy('created_at', 'DESC')
             ->get();
@@ -45,10 +45,17 @@ class PendapatanExport implements FromCollection, WithHeadings, WithMapping, Sho
     public function map($transaksi): array
     {
         $detailProduk = $transaksi->details->map(function ($detail) {
+            if ($detail->varian_mix) {
+                // Produk Mix
+                return $detail->varian_mix . ' (' . $detail->qty . ')';
+            }
+
             $produk = $detail->produk;
             if ($produk) {
-                return $produk->nama_produk . ' (' . $detail->qty . ')';
+                $ukuran = $detail->varian?->ukuran ? ' - ' . strtoupper($detail->varian->ukuran) : '';
+                return $produk->nama_produk . $ukuran . ' (' . $detail->qty . ')';
             }
+
             return "ID #" . $detail->produk_id . " Tidak Ditemukan (" . $detail->qty . ")";
         })->implode(', ');
 
@@ -56,10 +63,10 @@ class PendapatanExport implements FromCollection, WithHeadings, WithMapping, Sho
             $transaksi->id,
             $transaksi->nama,
             $transaksi->telepon,
-            $detailProduk, 
+            $detailProduk,
             strtoupper($transaksi->metode_pembayaran),
             $transaksi->created_at->format('d/m/Y H:i:s'),
-            $transaksi->total, 
+            $transaksi->total,
         ];
     }
 }

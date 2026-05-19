@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('nama_produk');
             $table->text('deskripsi');
             $table->string('gambar');
+            $table->boolean('is_hidden')->default(false);
             $table->timestamps();
         });
     }
